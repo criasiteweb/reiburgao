@@ -29,34 +29,35 @@ const LOJA = {
   entrega: {
     ativa: true,
     raioKm: 10,                        // [CONFIRMAR com o dono]
+    /* ⚠️ VALORES SUGERIDOS pela Criasiteweb, calculados pela distância real
+       de cada bairro até a loja (base R$ 3,00 até 2 km, +R$ 1,00 por km).
+       SUBSTITUIR pela tabela do dono assim que ele passar.
+       Bairros de Mogi acima de 10 km foram deixados de fora da lista. */
     cidades: {
-      "Suzano": {                      // [CONFIRMAR] bairros e valores
-        "Jardim Quaresmeira": 3,      // informado pelo Matheus — [CONFIRMAR com o dono]
-        "Vila Amorim": null,
-        "Centro": null,
-        "Jardim Imperador": null,
-        "Cidade Miguel Badra": null,
-        "Parque Maria Helena": null,
-        "Vila Urupês": null,
-        "Jardim Revista": null,
-        "Boa Vista": null,
-        "Casa Branca": null
+      "Suzano": {
+        "Jardim Quaresmeira":   3,      // ~0,5 km
+        "Jardim Imperador":     3,      // ~2,2 km
+        "Casa Branca":          3.5,    // ~2,3 km
+        "Centro":               3.5,    // ~2,6 km
+        "Parque Maria Helena":  4,      // ~2,9 km
+        "Vila Amorim":          4.5,    // ~3,6 km
+        "Vila Urupês":          5,      // ~3,8 km
+        "Cidade Miguel Badra":  6,      // ~5,0 km
+        "Jardim Revista":       6,      // ~5,2 km
+        "Boa Vista":            7       // ~6,0 km
       },
       "Poá": {
-        "Centro": null,
-        "Vila Varela": null,
-        "Jardim Nova Poá": null,
-        "Cidade Kemel": null,
-        "Vila Perracini": null
+        "Jardim Nova Poá":      3,      // ~1,3 km
+        "Centro":               4,      // ~3,0 km
+        "Vila Varela":          5.5,    // ~4,3 km
+        "Cidade Kemel":         5.5,    // ~4,7 km
+        "Vila Perracini":       null    // não localizei a distância
       },
       "Mogi das Cruzes": {
-        "Centro": null,
-        "Braz Cubas": null,
-        "Jundiapeba": null,
-        "César de Souza": null,
-        "Vila Suíssa": null
+        "Jundiapeba":           9       // ~7,8 km — os demais bairros de Mogi passam de 10 km
       }
     },
+
     /* quando o cliente diz que o bairro dele não está na lista */
     foraDaLista: null
   },
