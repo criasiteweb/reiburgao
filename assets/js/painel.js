@@ -15,7 +15,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import {
   getFirestore, collection, query, where, orderBy, onSnapshot, getDocs,
-  doc, updateDoc, Timestamp
+  doc, getDoc, setDoc, updateDoc, Timestamp
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 import { FIREBASE_CONFIG, CONTA_LOJA } from "./firebase-config.js";
@@ -183,6 +183,7 @@ function escutarPedidos() {
     pedidos = instantaneo.docs.map(d => ({ id: d.id, ...d.data() }));
     numerarDoDia();
     desenhar();
+    if (filtro === "caixa") desenharCaixa();
     if (novos.length) { apitar(); novos.forEach(avisarNaTela); }
     primeiraCarga = false;
   }, erro => {
@@ -269,6 +270,16 @@ function cartao(p) {
 
 function desenhar() {
   const lista = el("[data-lista]");
+  const noCaixa = filtro === "caixa";
+  el("[data-caixa]").hidden = !noCaixa;
+  lista.hidden = noCaixa;
+  el("[data-resumo]").hidden = noCaixa || !pedidos.length;
+  if (noCaixa) {
+    els("[data-filtro]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filtro === filtro)));
+    el("[data-caixa-data]").hidden = false;
+    desenharCaixa();
+    return;
+  }
   const abertos = p => !["concluido", "recusado"].includes(p.status);
   const visiveis = filtro === "abertos" ? pedidos.filter(abertos) : pedidos;
 
@@ -308,6 +319,203 @@ function resumoDoDia() {
 
 /* atualiza os "há X min" sem recarregar nada */
 setInterval(() => { if (pedidos.length && !el("[data-tela-painel]").hidden) desenhar(); }, 60000);
+
+
+/* =========================================================
+   Caixa do dia e relatório do mês
+   As contas ficam em caixa.js; aqui é só tela e gravação.
+   ========================================================= */
+let caixaDoDia = { despesas: [], fechado: false };
+let diaDoCaixa = null;
+
+function hojeISO() { return new Date().toISOString().slice(0, 10); }
+
+function diaAtual() { return filtro === "historico" && dataHistorico ? dataHistorico : hojeISO(); }
+
+async function carregarCaixa(iso) {
+  diaDoCaixa = iso;
+  try {
+    const d = await getDoc(doc(db, "caixa", iso));
+    caixaDoDia = d.exists() ? { despesas: [], fechado: false, ...d.data() } : { despesas: [], fechado: false };
+  } catch (e) {
+    caixaDoDia = { despesas: [], fechado: false };
+  }
+}
+
+async function gravarCaixa() {
+  try {
+    await setDoc(doc(db, "caixa", diaDoCaixa), caixaDoDia, { merge: true });
+  } catch (e) {
+    alert("Não consegui salvar. Verifique a internet e tente de novo.");
+  }
+}
+
+function linhaValor(rot, valor, cls = "") {
+  return `<div class="cx-linha ${cls}"><span>${rot}</span><b>${reais(valor)}</b></div>`;
+}
+
+function desenharCaixa() {
+  const alvo = el("[data-caixa]");
+  if (!alvo) return;
+  const a = apurar(pedidos);
+  const desp = somaDespesas(caixaDoDia.despesas);
+  const lucro = a.liquido - desp;
+  const dia = diaDoCaixa === hojeISO() ? "hoje" : formatarData(diaDoCaixa);
+
+  alvo.innerHTML = `
+    <div class="cx-topo">
+      <h2>Caixa de ${dia}</h2>
+      ${caixaDoDia.fechado
+        ? `<span class="cx-selo fechado">✓ Caixa fechado${caixaDoDia.fechadoEm ? " às " + caixaDoDia.fechadoEm : ""}</span>`
+        : `<span class="cx-selo aberto">● Caixa aberto</span>`}
+    </div>
+
+    <div class="cx-grade">
+
+      <section class="cx-cartao">
+        <h3>Entrou por forma de pagamento</h3>
+        ${FORMAS.map(f => `
+          <div class="cx-linha">
+            <span>${f.icone} ${f.rotulo} <i>${a.contagem[f.chave]}x</i></span>
+            <b>${reais(a.porForma[f.chave])}</b>
+          </div>`).join("")}
+        ${a.porForma.outro ? linhaValor("❓ Outros", a.porForma.outro) : ""}
+        ${linhaValor("Total recebido", a.bruto, "forte")}
+      </section>
+
+      <section class="cx-cartao">
+        <h3>Fechamento</h3>
+        ${linhaValor("Vendas (com taxa)", a.bruto)}
+        ${linhaValor("− Taxa do motoboy", a.taxas, "menos")}
+        ${linhaValor("= Venda da cozinha", a.liquido, "forte")}
+        ${linhaValor("− Mercadoria e gastos", desp, "menos")}
+        <div class="cx-linha lucro"><span>= Lucro do dia</span><b>${reais(lucro)}</b></div>
+        <p class="cx-nota">${a.quantidade} ${a.quantidade === 1 ? "pedido" : "pedidos"}${a.recusados ? ` · ${a.recusados} recusado${a.recusados > 1 ? "s" : ""}` : ""}</p>
+      </section>
+
+      <section class="cx-cartao">
+        <h3>Gastos do dia</h3>
+        <ul class="cx-despesas">
+          ${(caixaDoDia.despesas || []).map((d, i) => `
+            <li>
+              <span>${String(d.descricao || "Gasto").replace(/[<>&]/g, "")}</span>
+              <b>${reais(d.valor)}</b>
+              <button type="button" data-apaga-despesa="${i}" title="Apagar">✕</button>
+            </li>`).join("") || `<li class="vazia">Nenhum gasto lançado.</li>`}
+        </ul>
+        <form class="cx-form" data-form-despesa>
+          <input type="text" data-desc placeholder="Ex.: carne, pão, refrigerante" required />
+          <input type="text" inputmode="decimal" data-valor placeholder="0,00" required />
+          <button type="submit">Lançar</button>
+        </form>
+      </section>
+
+    </div>
+
+    <div class="cx-acoes">
+      ${caixaDoDia.fechado
+        ? `<button type="button" class="cx-reabrir" data-reabrir-caixa>Reabrir o caixa</button>`
+        : `<button type="button" class="principal larga" data-fechar-caixa>Fechar o caixa de ${dia}</button>`}
+      <button type="button" data-relatorio>📊 Relatório do mês</button>
+    </div>
+
+    <div class="cx-relatorio" data-relatorio-mes hidden></div>`;
+}
+
+/* ---------- relatório mensal ---------- */
+async function relatorioMes(iso) {
+  const alvo = el("[data-relatorio-mes]");
+  const [ano, mes] = (iso || hojeISO()).split("-");
+  alvo.hidden = false;
+  alvo.innerHTML = `<p class="vazio">Somando o mês…</p>`;
+
+  const de = new Date(+ano, +mes - 1, 1);
+  const ate = new Date(+ano, +mes, 1);
+  try {
+    const r = await getDocs(query(
+      collection(db, "pedidos"),
+      where("criadoEm", ">=", Timestamp.fromDate(de)),
+      where("criadoEm", "<", Timestamp.fromDate(ate)),
+      orderBy("criadoEm", "asc")
+    ));
+    const todos = r.docs.map(d => d.data());
+    const porDia = {};
+    todos.forEach(p => {
+      const dia = p.criadoEm && p.criadoEm.toDate
+        ? p.criadoEm.toDate().toISOString().slice(0, 10) : "?";
+      (porDia[dia] = porDia[dia] || []).push(p);
+    });
+
+    const a = apurar(todos);
+    const dias = Object.keys(porDia).sort();
+    const melhor = dias.reduce((m, d) =>
+      apurar(porDia[d]).bruto > (m.v || 0) ? { d, v: apurar(porDia[d]).bruto } : m, {});
+
+    alvo.innerHTML = `
+      <h3>Relatório de ${de.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}</h3>
+      <div class="cx-grade">
+        <section class="cx-cartao">
+          <h3>Resumo do mês</h3>
+          ${linhaValor("Faturamento", a.bruto, "forte")}
+          ${linhaValor("− Taxas de motoboy", a.taxas, "menos")}
+          ${linhaValor("= Venda da cozinha", a.liquido)}
+          <p class="cx-nota">${a.quantidade} pedidos em ${dias.length} ${dias.length === 1 ? "dia" : "dias"} · média de ${reais(a.quantidade ? a.bruto / a.quantidade : 0)} por pedido</p>
+          ${melhor.d ? `<p class="cx-nota">Melhor dia: ${formatarData(melhor.d)} com ${reais(melhor.v)}</p>` : ""}
+        </section>
+        <section class="cx-cartao">
+          <h3>Por forma de pagamento</h3>
+          ${FORMAS.map(f => `<div class="cx-linha"><span>${f.icone} ${f.rotulo}</span><b>${reais(a.porForma[f.chave])}</b></div>`).join("")}
+        </section>
+      </div>
+      <table class="cx-tabela">
+        <thead><tr><th>Dia</th><th>Pedidos</th><th>Faturou</th><th>Taxas</th></tr></thead>
+        <tbody>
+          ${dias.map(d => {
+            const x = apurar(porDia[d]);
+            return `<tr><td>${formatarData(d)}</td><td>${x.quantidade}</td><td>${reais(x.bruto)}</td><td>${reais(x.taxas)}</td></tr>`;
+          }).join("")}
+        </tbody>
+      </table>`;
+  } catch (e) {
+    console.error(e);
+    alvo.innerHTML = `<p class="vazio">Não consegui montar o relatório. Verifique a internet.</p>`;
+  }
+}
+
+/* ---------- cliques dentro do caixa ---------- */
+document.addEventListener("click", async e => {
+  if (el("[data-caixa]") && el("[data-caixa]").hidden) return;
+
+  if (e.target.closest("[data-fechar-caixa]")) {
+    if (!confirm("Fechar o caixa deste dia? Dá para reabrir depois.")) return;
+    caixaDoDia.fechado = true;
+    caixaDoDia.fechadoEm = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    await gravarCaixa(); desenharCaixa(); return;
+  }
+  if (e.target.closest("[data-reabrir-caixa]")) {
+    caixaDoDia.fechado = false;
+    await gravarCaixa(); desenharCaixa(); return;
+  }
+  if (e.target.closest("[data-relatorio]")) { relatorioMes(diaDoCaixa); return; }
+
+  const apaga = e.target.closest("[data-apaga-despesa]");
+  if (apaga) {
+    caixaDoDia.despesas.splice(Number(apaga.dataset.apagaDespesa), 1);
+    await gravarCaixa(); desenharCaixa();
+  }
+});
+
+document.addEventListener("submit", async e => {
+  const f = e.target.closest("[data-form-despesa]");
+  if (!f) return;
+  e.preventDefault();
+  const desc = f.querySelector("[data-desc]").value.trim();
+  const valor = paraNumero(f.querySelector("[data-valor]").value);
+  if (!desc || !(valor > 0)) return alert("Escreva o que foi comprado e o valor.");
+  caixaDoDia.despesas = caixaDoDia.despesas || [];
+  caixaDoDia.despesas.push({ descricao: desc, valor });
+  await gravarCaixa(); desenharCaixa();
+});
 
 /* ========================= ações ========================= */
 function achar(id) { return pedidos.find(p => p.id === id); }
@@ -398,6 +606,17 @@ function imprimir(p) {
 /* ========================= controles de cima ========================= */
 els("[data-filtro]").forEach(b => b.addEventListener("click", () => {
   filtro = b.dataset.filtro;
+  if (filtro === "caixa") {
+    const campo = el("[data-data]");
+    if (!campo.value) campo.value = hojeISO();
+    dataHistorico = campo.value === hojeISO() ? null : campo.value;
+    (async () => {
+      if (dataHistorico) await carregarHistorico(dataHistorico); else escutarPedidos();
+      await carregarCaixa(campo.value);
+      desenhar();
+    })();
+    return;
+  }
   if (filtro === "historico") {
     const campo = el("[data-data]");
     if (!campo.value) campo.value = ontemISO();
@@ -416,7 +635,15 @@ function ontemISO() {
   return d.toISOString().slice(0, 10);
 }
 
-el("[data-data]").addEventListener("change", e => {
+el("[data-data]").addEventListener("change", async e => {
+  if (filtro === "caixa") {
+    const iso = e.target.value || hojeISO();
+    dataHistorico = iso === hojeISO() ? null : iso;
+    if (dataHistorico) await carregarHistorico(dataHistorico); else escutarPedidos();
+    await carregarCaixa(iso);
+    desenhar();
+    return;
+  }
   dataHistorico = e.target.value;
   const hoje = new Date().toISOString().slice(0, 10);
   if (!dataHistorico || dataHistorico === hoje) {
