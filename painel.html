@@ -50,6 +50,11 @@
     <div class="filtros">
       <button type="button" data-filtro="abertos" aria-pressed="true">Em aberto</button>
       <button type="button" data-filtro="todos" aria-pressed="false">Todos de hoje</button>
+      <button type="button" data-filtro="historico" aria-pressed="false">Histórico</button>
+      <label class="caixa-data" data-caixa-data hidden>
+        <span>Dia</span>
+        <input type="date" data-data />
+      </label>
     </div>
     <div class="ajustes">
       <label class="campo-taxa">
@@ -60,6 +65,8 @@
       <button type="button" class="alternar" data-testar-som>Testar som</button>
     </div>
   </div>
+
+  <div class="resumo" data-resumo hidden></div>
 
   <main class="lista" data-lista>
     <p class="vazio">Carregando os pedidos de hoje…</p>
