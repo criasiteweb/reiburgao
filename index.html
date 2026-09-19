@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/estilo.css?v=7" />
+<link rel="stylesheet" href="assets/css/estilo.css?v=8" />
 </head>
 <body>
 <div class="barra-progresso" aria-hidden="true"><i></i></div>
@@ -205,6 +205,10 @@
           <a href="https://www.google.com/maps/search/?api=1&query=R.+Eunice+Cerqueira+Innocencio,+245+-+Jardim+Quaresmeira,+Suzano+-+SP" target="_blank" rel="noopener">Ver no mapa</a>
         </div>
         <div data-campos-entrega>
+          <label>CEP
+            <input name="cep" type="text" inputmode="numeric" placeholder="00000-000" autocomplete="postal-code" maxlength="9" />
+          </label>
+          <p class="busca-bairro" data-busca-cep hidden></p>
           <label>Cidade
             <select name="cidade" data-cidade></select>
           </label>
@@ -276,7 +280,7 @@
   </div>
 </div>
 
-<script src="assets/js/app.js?v=7"></script>
-<script type="module" src="assets/js/envio.js?v=7"></script>
+<script src="assets/js/app.js?v=8"></script>
+<script type="module" src="assets/js/envio.js?v=8"></script>
 </body>
 </html>
