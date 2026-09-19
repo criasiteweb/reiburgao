@@ -388,25 +388,27 @@ function desenharCaixa() {
         ${linhaValor("Vendas (com taxa)", a.bruto)}
         ${linhaValor("− Taxa do motoboy", a.taxas, "menos")}
         ${linhaValor("= Venda da cozinha", a.liquido, "forte")}
-        ${linhaValor("− Mercadoria e gastos", desp, "menos")}
+        ${linhaValor("− Mercadoria", desp, "menos")}
         <div class="cx-linha lucro"><span>= Lucro do dia</span><b>${reais(lucro)}</b></div>
         <p class="cx-nota">${a.quantidade} ${a.quantidade === 1 ? "pedido" : "pedidos"}${a.recusados ? ` · ${a.recusados} recusado${a.recusados > 1 ? "s" : ""}` : ""}</p>
       </section>
 
       <section class="cx-cartao">
-        <h3>Gastos do dia</h3>
+        <h3>Mercadoria</h3>
+        <p class="cx-ajuda">Quanto saiu do caixa para repor estoque hoje. Pode lançar várias vezes.</p>
         <ul class="cx-despesas">
           ${(caixaDoDia.despesas || []).map((d, i) => `
             <li>
-              <span>${String(d.descricao || "Gasto").replace(/[<>&]/g, "")}</span>
+              <span>${d.hora || "—"}</span>
               <b>${reais(d.valor)}</b>
               <button type="button" data-apaga-despesa="${i}" title="Apagar">✕</button>
-            </li>`).join("") || `<li class="vazia">Nenhum gasto lançado.</li>`}
+            </li>`).join("") || `<li class="vazia">Nada lançado ainda.</li>`}
         </ul>
+        ${(caixaDoDia.despesas || []).length > 1
+          ? `<div class="cx-linha forte"><span>Total em mercadoria</span><b>${reais(desp)}</b></div>` : ""}
         <form class="cx-form" data-form-despesa>
-          <input type="text" data-desc placeholder="Ex.: carne, pão, refrigerante" required />
           <input type="text" inputmode="decimal" data-valor placeholder="0,00" required />
-          <button type="submit">Lançar</button>
+          <button type="submit">Lançar gasto</button>
         </form>
       </section>
 
@@ -509,11 +511,14 @@ document.addEventListener("submit", async e => {
   const f = e.target.closest("[data-form-despesa]");
   if (!f) return;
   e.preventDefault();
-  const desc = f.querySelector("[data-desc]").value.trim();
   const valor = paraNumero(f.querySelector("[data-valor]").value);
-  if (!desc || !(valor > 0)) return alert("Escreva o que foi comprado e o valor.");
+  if (!(valor > 0)) return alert("Digite quanto foi gasto.");
   caixaDoDia.despesas = caixaDoDia.despesas || [];
-  caixaDoDia.despesas.push({ descricao: desc, valor });
+  caixaDoDia.despesas.push({
+    descricao: "Mercadoria",
+    valor,
+    hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+  });
   await gravarCaixa(); desenharCaixa();
 });
 
