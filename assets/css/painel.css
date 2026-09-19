@@ -127,8 +127,13 @@
 .rodape-painel p{margin:0 0 10px}
 .rodape-painel a{color:var(--amarelo);text-decoration:none}
 
-/* ---------- a comanda só aparece na impressão ---------- */
-.papel{position:fixed;left:-99999px;top:0}
+/* ---------- a comanda só aparece na impressão ----------
+   Precisa ser @media screen: sem isso esta regra também valia na
+   impressão (ela vem depois de comanda.css) e jogava o papel para
+   fora da folha, saindo em branco. */
+@media screen{
+  .papel{position:fixed;left:-99999px;top:0}
+}
 
 @media (max-width:560px){
   .barra{gap:10px;padding:12px}
