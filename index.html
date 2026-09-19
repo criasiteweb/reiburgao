@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0E0E10" />
+<title>Rei Burgão | Hambúrguer artesanal e delivery em Suzano</title>
+<meta name="description" content="Rei Burgão Lanches — o melhor lanche artesanal da região. Hambúrguer artesanal, tradicional, hot dog, combos na caixa e porções. Delivery em Suzano, Jd. Quaresmeira. Peça pelo WhatsApp." />
+<link rel="icon" href="assets/img/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="assets/img/logo.png" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Rei Burgão | O melhor lanche artesanal da região" />
+<meta property="og:description" content="Cardápio digital, combos na caixa e delivery em Suzano. Monte seu pedido e envie pelo WhatsApp." />
+<meta property="og:image" content="assets/img/compartilhar.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/estilo.css" />
+</head>
+<body>
+<div class="barra-progresso" aria-hidden="true"><i></i></div>
+
+<header class="topo" data-topo>
+  <a class="marca" href="#inicio" aria-label="Rei Burgão — início">
+    <img src="assets/img/logo.png" alt="" width="44" height="44" />
+    <span>
+      <strong>Rei Burgão</strong>
+      <small>Lanches · Suzano</small>
+    </span>
+  </a>
+  <nav class="atalhos" aria-label="Seções">
+    <a href="#cardapio">Cardápio</a>
+    <a href="#combos">Combos</a>
+    <a href="#onde">Onde estamos</a>
+  </nav>
+  <button class="btn-carrinho" type="button" data-abrir-carrinho aria-label="Abrir carrinho">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h15l-1.6 9H8.2L6 3H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
+    <span data-contador>0</span>
+  </button>
+</header>
+
+<main id="inicio">
+
+  <section class="capa">
+    <div class="capa-fundo" aria-hidden="true">
+      <span class="brilho brilho-a"></span>
+      <span class="brilho brilho-b"></span>
+      <img class="marca-dagua" src="assets/img/logo.png" alt="" />
+    </div>
+    <div class="capa-conteudo">
+      <img class="capa-logo" src="assets/img/logo.png" alt="Rei Burgão" width="150" height="150" />
+      <p class="chamada">Lanchonete em Suzano · Jd. Quaresmeira</p>
+      <h1>O melhor lanche<br /><em>artesanal</em> da região.</h1>
+      <p class="sub">Hambúrguer artesanal de 150g, tradicional, hot dog, combo na caixa e porções. Você monta o pedido aqui e ele chega pronto no nosso WhatsApp.</p>
+
+      <div class="selos">
+        <span class="selo nota"><b>5,0</b> <i aria-hidden="true">★★★★★</i> <small>6 avaliações no Google</small></span>
+        <span class="selo" data-status-selo>
+          <i class="ponto" aria-hidden="true"></i> <b data-status-texto>Verificando…</b>
+        </span>
+      </div>
+
+      <div class="capa-botoes">
+        <a class="botao primario" href="#cardapio">Ver cardápio</a>
+        <button class="botao contorno" type="button" data-abrir-carrinho>Meu pedido</button>
+      </div>
+      <a class="insta" href="https://www.instagram.com/rei_burgao_/" target="_blank" rel="noopener">@rei_burgao_ no Instagram</a>
+    </div>
+    <div class="rolar" aria-hidden="true"><span></span></div>
+  </section>
+
+  <section class="faixa" aria-label="Informações rápidas">
+    <div><b>A partir das 18h</b><small data-pendente>dias a confirmar</small></div>
+    <div><b>Delivery</b><small>e retirada no balcão</small></div>
+    <div><b>Artesanal 150g</b><small>no pão brioche</small></div>
+    <div><b>R$ 20–40</b><small>por pessoa</small></div>
+  </section>
+
+  <section id="cardapio" class="secao">
+    <div class="titulo-secao" data-surge>
+      <p class="chamada">Nosso cardápio</p>
+      <h2>Monte seu pedido</h2>
+      <p class="apoio">Toque no lanche para escolher adicionais e a quantidade. O total é somado na hora e a mensagem vai pronta para o WhatsApp.</p>
+    </div>
+
+    <div class="filtros" role="tablist" aria-label="Filtrar cardápio" data-filtros></div>
+    <div class="cardapio" data-cardapio></div>
+  </section>
+
+  <section id="combos" class="secao destaque" data-surge>
+    <div class="destaque-caixa">
+      <p class="chamada">Mais pedido</p>
+      <h2>Combo na caixa</h2>
+      <p>De 2 a 5 lanches numa caixa só, com <b>fritas, nuggets, anel de cebola, molho e refrigerante</b>. Você escolhe cada lanche entre burguer, cheddar ou salada.</p>
+      <ul class="lista-combo">
+        <li><span>Tradicional — 2 hambúrgueres 56g</span><b>a partir de R$ 64,90</b></li>
+        <li><span>Artesanal — hambúrguer 150g</span><b>a partir de R$ 79,90</b></li>
+      </ul>
+      <button class="botao primario" type="button" data-ir-combos>Ver os combos</button>
+    </div>
+  </section>
+
+  <section class="secao avaliacoes" aria-labelledby="t-aval">
+    <div class="titulo-secao" data-surge>
+      <p class="chamada">Quem já pediu</p>
+      <h2 id="t-aval">Nota 5,0 no Google</h2>
+      <p class="apoio">Avaliações publicadas por clientes na ficha do Google da lanchonete.</p>
+    </div>
+    <div class="cartoes-aval">
+      <article data-surge>
+        <i aria-hidden="true">★★★★★</i>
+        <p>“Combo com hambúrguer artesanal maravilhoso, recomendo...”</p>
+        <footer><b>Nelson Borges da Cunha Filho</b><small>Google · há 8 meses</small></footer>
+      </article>
+      <article data-surge>
+        <i aria-hidden="true">★★★★★</i>
+        <p>“Ótimo hambúrguer e bem caprichado, preço acessível.”</p>
+        <footer><b>Thiago Costa</b><small>Google · há 1 ano</small></footer>
+      </article>
+      <article data-surge>
+        <i aria-hidden="true">★★★★★</i>
+        <p>“Muito gostoso os lanches, ótimo atendimento e preço acessível 👍”</p>
+        <footer><b>Rita Santos</b><small>Google · Local Guide</small></footer>
+      </article>
+    </div>
+  </section>
+
+  <section id="onde" class="secao onde">
+    <div class="onde-texto" data-surge>
+      <p class="chamada">Onde estamos</p>
+      <h2>Jd. Quaresmeira, Suzano</h2>
+      <p class="endereco">R. Eunice Cerqueira Innocencio, 245<br />Jardim Quaresmeira · Suzano — SP<br />CEP 08671-330</p>
+      <ul class="dados">
+        <li><b>WhatsApp</b><span>(11) 97638-5099</span></li>
+        <li><b>Abre às</b><span>18:00 <em data-pendente>dias a confirmar</em></span></li>
+        <li><b>Entrega</b><span data-pendente>taxa e bairros a confirmar</span></li>
+      </ul>
+      <div class="onde-botoes">
+        <a class="botao primario" href="https://wa.me/5511976385099?text=Ol%C3%A1%21%20Vim%20pelo%20site%20do%20Rei%20Burg%C3%A3o%20e%20quero%20fazer%20um%20pedido." target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        <a class="botao contorno" href="https://www.google.com/maps/search/?api=1&query=R.+Eunice+Cerqueira+Innocencio,+245+-+Jardim+Quaresmeira,+Suzano+-+SP,+08671-330" target="_blank" rel="noopener">Como chegar</a>
+      </div>
+    </div>
+    <div class="onde-mapa" data-surge>
+      <iframe title="Mapa do Rei Burgão" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps?q=R.%20Eunice%20Cerqueira%20Innocencio%2C%20245%20-%20Jardim%20Quaresmeira%2C%20Suzano%20-%20SP%2C%2008671-330&output=embed"></iframe>
+    </div>
+  </section>
+
+  <section class="secao chamada-final" data-surge>
+    <img src="assets/img/logo.png" alt="" width="84" height="84" />
+    <h2>Bateu a fome?</h2>
+    <p>Monte o pedido no cardápio e mande pra gente. A gente confirma tudo pelo WhatsApp.</p>
+    <button class="botao primario grande" type="button" data-abrir-carrinho>Finalizar meu pedido</button>
+  </section>
+</main>
+
+<footer class="rodape">
+  <img src="assets/img/logo.png" alt="Rei Burgão" width="60" height="60" />
+  <p class="slogan">O melhor lanche artesanal da região</p>
+  <p class="end">R. Eunice Cerqueira Innocencio, 245 · Jd. Quaresmeira · Suzano — SP</p>
+  <div class="rodape-links">
+    <a href="https://wa.me/5511976385099" target="_blank" rel="noopener">WhatsApp (11) 97638-5099</a>
+    <a href="https://www.instagram.com/rei_burgao_/" target="_blank" rel="noopener">@rei_burgao_</a>
+  </div>
+  <small>Site por <a href="https://criasiteweb.github.io" target="_blank" rel="noopener">Criasiteweb</a></small>
+</footer>
+
+<button class="flutuante" type="button" data-abrir-carrinho hidden data-flutuante>
+  <span class="fl-esq">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h15l-1.6 9H8.2L6 3H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
+    <b data-contador>0</b> itens
+  </span>
+  <b data-total-flutuante>R$ 0,00</b>
+</button>
+
+<div class="veu" data-veu hidden></div>
+
+<aside class="carrinho" data-carrinho aria-label="Seu pedido" aria-hidden="true">
+  <div class="carrinho-topo">
+    <div>
+      <p class="chamada">Seu pedido</p>
+      <h2>Carrinho</h2>
+    </div>
+    <button class="fechar" type="button" data-fechar-carrinho aria-label="Fechar carrinho">×</button>
+  </div>
+  <form class="checkout" data-checkout novalidate>
+    <div class="carrinho-corpo">
+      <div class="carrinho-itens" data-itens></div>
+      <div class="checkout-campos">
+        <label>Seu nome
+          <input name="nome" type="text" placeholder="Como te chamamos?" autocomplete="name" />
+        </label>
+        <label>Seu WhatsApp
+          <input name="fone" type="tel" inputmode="numeric" placeholder="(11) 99999-9999" autocomplete="tel" />
+        </label>
+        <fieldset class="opcoes">
+          <legend>Como você quer receber?</legend>
+          <label class="radio"><input type="radio" name="tipo" value="Entrega" checked /><span>Entrega</span></label>
+          <label class="radio"><input type="radio" name="tipo" value="Retirada no balcão" /><span>Retirada</span></label>
+        </fieldset>
+        <div data-campos-entrega>
+          <label>Endereço
+            <input name="endereco" type="text" placeholder="Rua, número e complemento" autocomplete="street-address" />
+          </label>
+          <label>Bairro
+            <input name="bairro" type="text" placeholder="Seu bairro" />
+          </label>
+        </div>
+        <label>Forma de pagamento
+          <select name="pagamento">
+            <option>Pix</option>
+            <option>Dinheiro</option>
+            <option>Cartão na entrega</option>
+          </select>
+        </label>
+        <label data-campo-troco hidden>Troco para quanto?
+          <input name="troco" type="text" inputmode="decimal" placeholder="Ex: R$ 100,00 — ou deixe vazio se não precisa" />
+        </label>
+        <label>Observações
+          <input name="obs" type="text" placeholder="Ex: sem cebola, ponto da carne, tocar o interfone..." />
+        </label>
+      </div>
+    </div>
+    <div class="carrinho-rodape">
+      <div class="linha-total"><span>Subtotal</span><b data-subtotal>R$ 0,00</b></div>
+      <p class="aviso-taxa" data-pendente>taxa de entrega a confirmar com a loja</p>
+      <button class="botao primario grande" type="submit">Enviar pedido no WhatsApp</button>
+      <p class="status" data-status role="status" aria-live="polite"></p>
+    </div>
+  </form>
+</aside>
+
+<div class="modal" data-modal hidden role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+  <div class="modal-caixa">
+    <button class="fechar" type="button" data-fechar-modal aria-label="Fechar">×</button>
+    <p class="chamada" data-modal-cat></p>
+    <h3 id="modal-titulo" data-modal-nome></h3>
+    <p class="modal-desc" data-modal-desc></p>
+    <div data-modal-extras></div>
+    <label class="modal-obs">Observação para este item
+      <input type="text" data-modal-obs placeholder="Ex: sem salada, capricha no molho..." />
+    </label>
+    <div class="modal-rodape">
+      <div class="qtd" role="group" aria-label="Quantidade">
+        <button type="button" data-qtd="-1" aria-label="Menos um">−</button>
+        <b data-modal-qtd>1</b>
+        <button type="button" data-qtd="1" aria-label="Mais um">+</button>
+      </div>
+      <button class="botao primario" type="button" data-modal-add>Adicionar · <b data-modal-total>R$ 0,00</b></button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>
