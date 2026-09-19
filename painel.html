@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0E0E10" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Painel de Pedidos | Rei Burgão</title>
+<link rel="icon" href="assets/img/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="assets/img/logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/comanda.css" />
+<link rel="stylesheet" href="assets/css/painel.css" />
+</head>
+<body>
+
+<!-- ============ tela de entrada ============ -->
+<section class="login" data-tela-login hidden>
+  <form class="caixa-login" data-form-login>
+    <img src="assets/img/logo.png" alt="" width="72" height="72" />
+    <h1>Painel de Pedidos</h1>
+    <p>Os pedidos do site chegam aqui na hora.</p>
+    <label>
+      <span>Senha da loja</span>
+      <input type="password" data-senha required autocomplete="current-password" placeholder="••••••••" />
+    </label>
+    <button type="submit" class="principal larga" data-entrar>Entrar</button>
+    <p class="erro" data-erro-login role="alert"></p>
+    <small>Digite uma vez só — este computador vai lembrar.</small>
+  </form>
+</section>
+
+<!-- ============ painel ============ -->
+<div data-tela-painel hidden>
+
+  <header class="topo">
+    <img src="assets/img/logo.png" alt="" width="38" height="38" />
+    <span class="marca">
+      <small>Rei Burgão</small>
+      <strong>Pedidos <b class="contador" data-contador></b></strong>
+    </span>
+    <span class="conexao" data-conexao data-ok="nao">Conectando…</span>
+    <button type="button" class="sair" data-sair>Sair</button>
+  </header>
+
+  <div class="barra">
+    <div class="filtros">
+      <button type="button" data-filtro="abertos" aria-pressed="true">Em aberto</button>
+      <button type="button" data-filtro="todos" aria-pressed="false">Todos de hoje</button>
+    </div>
+    <div class="ajustes">
+      <label class="campo-taxa">
+        <span>Taxa de entrega</span>
+        <input type="text" inputmode="decimal" data-taxa placeholder="5,00" />
+      </label>
+      <button type="button" class="alternar" data-som aria-pressed="true">🔔 Som ligado</button>
+      <button type="button" class="alternar" data-testar-som>Testar som</button>
+    </div>
+  </div>
+
+  <main class="lista" data-lista>
+    <p class="vazio">Carregando os pedidos de hoje…</p>
+  </main>
+
+  <footer class="rodape-painel">
+    <p>Esta tela precisa ficar <strong>aberta</strong> para apitar quando chegar pedido. Deixe fixada numa aba do navegador.</p>
+    <a href="comanda.html">Imprimir um pedido colado do WhatsApp →</a>
+  </footer>
+
+</div>
+
+<!-- área usada só na hora de imprimir (fica fora da tela) -->
+<div class="papel" data-papel aria-hidden="true"></div>
+
+<script src="assets/js/comanda-core.js"></script>
+<script type="module" src="assets/js/painel.js"></script>
+</body>
+</html>
