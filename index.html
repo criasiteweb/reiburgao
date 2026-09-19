@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/estilo.css?v=4" />
+<link rel="stylesheet" href="assets/css/estilo.css?v=5" />
 </head>
 <body>
 <div class="barra-progresso" aria-hidden="true"><i></i></div>
@@ -205,12 +205,28 @@
           <a href="https://www.google.com/maps/search/?api=1&query=R.+Eunice+Cerqueira+Innocencio,+245+-+Jardim+Quaresmeira,+Suzano+-+SP" target="_blank" rel="noopener">Ver no mapa</a>
         </div>
         <div data-campos-entrega>
-          <label>Endereço
-            <input name="endereco" type="text" placeholder="Rua, número e complemento" autocomplete="street-address" />
+          <label>Cidade
+            <select name="cidade" data-cidade></select>
           </label>
+          <div class="dupla dupla-rua">
+            <label>Rua
+              <input name="endereco" type="text" placeholder="Nome da rua" autocomplete="street-address" />
+            </label>
+            <label>Número
+              <input name="numero" type="text" inputmode="numeric" placeholder="123" autocomplete="off" />
+            </label>
+          </div>
+          <p class="busca-bairro" data-busca-bairro hidden></p>
           <label>Bairro
-            <input name="bairro" type="text" placeholder="Seu bairro" />
+            <select name="bairro" data-bairro></select>
           </label>
+          <label data-campo-outro hidden>Qual é o seu bairro?
+            <input name="bairroOutro" type="text" placeholder="Digite o nome do bairro" />
+          </label>
+          <label>Complemento
+            <input name="complemento" type="text" placeholder="Apto, bloco, ponto de referência (opcional)" />
+          </label>
+          <p class="aviso-entrega" data-aviso-entrega hidden></p>
         </div>
         <label>Forma de pagamento
           <select name="pagamento">
@@ -229,6 +245,8 @@
     </div>
     <div class="carrinho-rodape">
       <div class="linha-total"><span>Subtotal</span><b data-subtotal>R$ 0,00</b></div>
+      <div class="linha-total linha-taxa" data-linha-taxa hidden><span>Taxa de entrega</span><b data-taxa-valor>—</b></div>
+      <div class="linha-total linha-geral" data-linha-geral hidden><span>Total</span><b data-total-geral>R$ 0,00</b></div>
       <p class="aviso-taxa" data-pendente>taxa de entrega a confirmar com a loja</p>
       <button class="botao primario grande" type="submit">Enviar pedido no WhatsApp</button>
       <p class="status" data-status role="status" aria-live="polite"></p>
@@ -258,7 +276,7 @@
   </div>
 </div>
 
-<script src="assets/js/app.js?v=4"></script>
-<script type="module" src="assets/js/envio.js?v=4"></script>
+<script src="assets/js/app.js?v=5"></script>
+<script type="module" src="assets/js/envio.js?v=5"></script>
 </body>
 </html>
