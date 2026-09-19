@@ -24,7 +24,7 @@ service cloud.firestore {
        campos certos, tamanhos sadios e status sempre "novo" */
     function pedidoValido(d) {
       return d.keys().hasOnly(['criadoEm','status','impresso','texto','cliente',
-                               'fone','tipo','endereco','pagamento','total','itens'])
+                               'fone','tipo','endereco','pagamento','total','itens','taxa'])
           && d.status == 'novo'
           && d.impresso == false
           && d.texto is string   && d.texto.size() > 0 && d.texto.size() <= 4000
@@ -35,6 +35,7 @@ service cloud.firestore {
           && d.pagamento is string && d.pagamento.size() <= 80
           && d.total is number   && d.total >= 0 && d.total <= 100000
           && d.itens is int      && d.itens >= 0 && d.itens <= 200
+          && d.taxa is number    && d.taxa >= 0 && d.taxa <= 1000
           && d.criadoEm == request.time;
     }
 
@@ -46,6 +47,12 @@ service cloud.firestore {
                     && request.resource.data.diff(resource.data)
                          .affectedKeys().hasOnly(['status','impresso']);
       allow delete: if false;
+    }
+
+    /* Caixa do dia: despesas com mercadoria e fechamento.
+       Só a loja mexe — o cliente do site nem enxerga. */
+    match /caixa/{dia} {
+      allow read, write: if ehALoja();
     }
 
     /* qualquer outro caminho fica fechado */
