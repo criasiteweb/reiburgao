@@ -98,7 +98,7 @@ const CARDAPIO = [
   { id:"b4", g:"bebidas", n:"Fanta laranja ou uva", d:"", p:15.90 , f:"fanta" },
   { id:"b5", g:"bebidas", n:"Kuat 2 litros", d:"", p:11.90 , f:"kuat" },
   { id:"b6", g:"bebidas", n:"Sukita 2 litros", d:"", p:11.90 , f:"sukita" },
-  { id:"b7", g:"bebidas", n:"Pet 1,5 litros", d:"", p:11.90 , f:"pet15" },
+  { id:"b7", g:"bebidas", n:"Pepsi 1,5 litros", d:"", p:11.90 , f:"pet15" },
   { id:"b8", g:"bebidas", n:"Dolly 2 litros", d:"", p:8.90 , f:"dolly" },
   { id:"b9", g:"bebidas", n:"Refrigerante 600 ml", d:"", p:9.90 , f:"refri600" },
   { id:"b10",g:"bebidas", n:"Lata 350 ml", d:"", p:5.90 , f:"lata350" },
