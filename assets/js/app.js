@@ -383,6 +383,55 @@ function formatarFone(v) {
 const SEM_LISTA = "__outro__";
 
 
+
+/* ---- CEP preenche endereço sozinho (ViaCEP) ---- */
+function formatarCep(v) {
+  const d = soDigitos(v).slice(0, 8);
+  return d.length > 5 ? d.slice(0, 5) + "-" + d.slice(5) : d;
+}
+
+function avisoCep(texto, achou) {
+  const el = $("[data-busca-cep]");
+  if (!el) return;
+  el.hidden = !texto;
+  el.textContent = texto;
+  el.dataset.achou = achou ? "sim" : "nao";
+}
+
+async function buscarCep() {
+  const campo = document.querySelector("[name=cep]");
+  if (!campo) return;
+  const d = soDigitos(campo.value);
+  if (d.length !== 8) { avisoCep("", false); return; }
+
+  avisoCep("Buscando o endereço…", false);
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${d}/json/`);
+    const e = await r.json();
+    if (e.erro) { avisoCep("CEP não encontrado — preencha os campos abaixo.", false); return; }
+
+    /* a loja atende essa cidade? */
+    const cidades = Object.keys(LOJA.entrega.cidades);
+    const cidade = cidades.find(c => c.toLowerCase() === String(e.localidade).toLowerCase());
+    if (!cidade) {
+      avisoCep(`A loja entrega em ${cidades.join(", ")}. O CEP informado é de ${e.localidade}.`, false);
+      return;
+    }
+
+    $("[data-cidade]").value = cidade;
+    preencherBairros();
+
+    const rua = document.querySelector("[name=endereco]");
+    if (e.logradouro) { rua.value = e.logradouro; ultimaBusca = cidade + "|" + e.logradouro.toLowerCase(); }
+    if (e.bairro) aplicarBairro(e.bairro);
+
+    avisoCep(`${e.logradouro || "Endereço"} — ${e.bairro || ""}, ${e.localidade}`.replace(" — ,", " —"), true);
+    if (e.logradouro) document.querySelector("[name=numero]").focus();
+  } catch (err) {
+    avisoCep("", false);   // sem internet: o cliente preenche na mão
+  }
+}
+
 /* ---- sugestão de bairro a partir da rua (ViaCEP, grátis e sem cadastro) ---- */
 let buscaAgendada = null;
 let ultimaBusca = "";
@@ -731,6 +780,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }));
   document.querySelector("[name=bairroOutro]").addEventListener("input", atualizarTaxa);
   document.querySelector("[name=endereco]").addEventListener("input", pedirBairro);
+  const campoCep = document.querySelector("[name=cep]");
+  campoCep.addEventListener("input", e => {
+    e.target.value = formatarCep(e.target.value);
+    if (soDigitos(e.target.value).length === 8) buscarCep();
+  });
   montarEntrega();
   form.pagamento.addEventListener("change", () => { troco.hidden = form.pagamento.value !== "Dinheiro"; });
 });
