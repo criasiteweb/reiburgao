@@ -403,3 +403,5 @@ em{font-style:normal;color:var(--amarelo)}
 .caixa-retirada span{font-size:.83rem;color:var(--texto);line-height:1.45;text-transform:none;letter-spacing:0;font-weight:500}
 .caixa-retirada a{font-size:.78rem;color:var(--amarelo);font-weight:700;justify-self:start;
   text-decoration:none;border-bottom:1px solid rgba(255,194,14,.45);text-transform:none;letter-spacing:0}
+
+.ilustrativa{display:block;margin-top:.4rem;font-size:.74rem;color:rgba(237,234,226,.42);font-style:italic}
