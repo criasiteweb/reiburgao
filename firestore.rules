@@ -1,0 +1,56 @@
+rules_version = '2';
+
+/* =========================================================
+   Rei Burgão — regras do servidor de pedidos
+   Criasiteweb
+
+   Ideia central:
+   - QUALQUER pessoa pode ENVIAR um pedido (é o cliente no site).
+   - NINGUÉM pode LER a lista de pedidos, exceto a conta da loja.
+     Isso protege nome, telefone e endereço dos clientes.
+   - Nada pode ser apagado: histórico do dia fica preservado.
+   ========================================================= */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function ehALoja() {
+      return request.auth != null
+          && request.auth.token.email == 'loja@reiburgao.com.br'
+          && request.auth.token.email_verified in [true, false];
+    }
+
+    /* o pedido que chega do site precisa ter cara de pedido:
+       campos certos, tamanhos sadios e status sempre "novo" */
+    function pedidoValido(d) {
+      return d.keys().hasOnly(['criadoEm','status','impresso','texto','cliente',
+                               'fone','tipo','endereco','pagamento','total','itens'])
+          && d.status == 'novo'
+          && d.impresso == false
+          && d.texto is string   && d.texto.size() > 0 && d.texto.size() <= 4000
+          && d.cliente is string && d.cliente.size() <= 80
+          && d.fone is string    && d.fone.size() <= 25
+          && d.tipo is string    && d.tipo.size() <= 20
+          && d.endereco is string  && d.endereco.size() <= 200
+          && d.pagamento is string && d.pagamento.size() <= 80
+          && d.total is number   && d.total >= 0 && d.total <= 100000
+          && d.itens is int      && d.itens >= 0 && d.itens <= 200
+          && d.criadoEm == request.time;
+    }
+
+    match /pedidos/{pedido} {
+      allow create: if pedidoValido(request.resource.data);
+      allow get, list: if ehALoja();
+      /* a loja só mexe no andamento do pedido, nunca no conteúdo */
+      allow update: if ehALoja()
+                    && request.resource.data.diff(resource.data)
+                         .affectedKeys().hasOnly(['status','impresso']);
+      allow delete: if false;
+    }
+
+    /* qualquer outro caminho fica fechado */
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}
