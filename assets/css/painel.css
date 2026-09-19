@@ -232,3 +232,7 @@
   .cx-form{flex-wrap:wrap}
   .cx-form input:nth-child(2){width:100%}
 }
+.cx-ajuda{margin:-4px 0 12px;font-size:12.5px;line-height:1.45;color:var(--texto-suave)}
+.cx-despesas li span{color:var(--texto-suave);font-size:13px;flex:0 0 auto}
+.cx-despesas li b{flex:1;text-align:right}
+.cx-form input:first-child{flex:1}
