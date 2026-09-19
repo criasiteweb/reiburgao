@@ -12,8 +12,22 @@ const LOJA = {
   endereco: "R. Eunice Cerqueira Innocencio, 245 — Jd. Quaresmeira, Suzano/SP",
   abre: 18,                            // hora de abertura (Google)
   fecha: 23,                           // [CONFIRMAR] horário de fechamento
-  diasFechados: []                     // [CONFIRMAR] ex.: [1] fecha segunda (0=dom)
+  diasFechados: [],                    // [CONFIRMAR] ex.: [1] fecha segunda (0=dom)
+
+  /* Impressão de comanda (modo loja em comanda.html).
+     false = o pedido no WhatsApp continua igual, e a loja imprime
+             colando o texto em comanda.html.
+     true  = o pedido leva no fim um link que já abre a comanda pronta
+             para a loja imprimir com um toque (o cliente vê esse link). */
+  linkComanda: false
 };
+
+/* transforma texto em código para caber no link da comanda */
+function paraLink(txt) {
+  const bytes = new TextEncoder().encode(txt);
+  let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
 
 /* ---- adicionais ---- */
 const ADD_LANCHE = [
@@ -358,9 +372,13 @@ function enviarPedido(e) {
     "_Pedido enviado pelo site._"
   ].filter(l => l !== "").join("\n");
 
+  const texto = LOJA.linkComanda
+    ? msg + "\n🖨️ Comanda: " + location.href.replace(/[^/]*$/, "") + "comanda.html#p=" + paraLink(msg)
+    : msg;
+
   st.dataset.erro = "false";
   st.textContent = "Abrindo o WhatsApp com seu pedido…";
-  window.open(`https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+  window.open(`https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
 }
 
 /* ========================= status aberto / fechado ========================= */
