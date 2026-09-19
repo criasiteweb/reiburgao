@@ -92,7 +92,7 @@ function lerPedido(bruto) {
     .map(l => l.replace(/^\[?\d{1,2}\/\d{1,2}\/\d{2,4}[^\]]*\]?\s*[^:]{0,40}:\s?/, ""))
     .map(l => l.replace(/‎/g, ""));
 
-  const pedido = { itens: [], subtotal: 0, cliente: "", fone: "", tipo: "", endereco: "", pagamento: "", obs: "" };
+  const pedido = { itens: [], subtotal: 0, taxa: null, cliente: "", fone: "", tipo: "", endereco: "", pagamento: "", obs: "" };
   let ultimo = null;
 
   for (const cru of linhas) {
@@ -117,11 +117,15 @@ function lerPedido(bruto) {
       continue;
     }
     // campos do rodapé
-    const c = t.match(/^(Subtotal|Cliente|WhatsApp|Como receber|Endereço|Endereco|Pagamento|Observações|Observacoes)\s*:\s*(.*)$/i);
+    const c = t.match(/^(Subtotal|Taxa de entrega|Total|Cliente|WhatsApp|Como receber|Endereço|Endereco|Pagamento|Observações|Observacoes)\s*:\s*(.*)$/i);
     if (c) {
       const v = c[2].trim();
       switch (c[1].toLowerCase()) {
         case "subtotal": pedido.subtotal = paraNumero(v); break;
+        /* a taxa vem do próprio pedido: é a tabela por bairro do site.
+           "a combinar" mantém null, e aí a comanda usa o valor do aparelho. */
+        case "taxa de entrega": pedido.taxa = /combinar/i.test(v) ? null : paraNumero(v); break;
+        case "total": break;
         case "cliente": pedido.cliente = v; break;
         case "whatsapp": pedido.fone = v; break;
         case "como receber": pedido.tipo = v; break;
@@ -141,6 +145,10 @@ function lerPedido(bruto) {
 }
 
 /* ========================= a comanda ========================= */
+function taxaDoPedido(p) {
+  return (p && typeof p.taxa === "number" && p.taxa > 0) ? p.taxa : taxaAtual();
+}
+
 function taxaAtual() {
   /* o campo existe no Modo Loja; no painel de pedidos lemos o valor guardado */
   const campo = $("[data-taxa]");
@@ -179,7 +187,7 @@ function secao(titulo) {
 function comandaTexto(p, num, semAcentos) {
   const L = [];
   const barra  = "=".repeat(COLS);
-  const taxa   = taxaAtual();
+  const taxa   = taxaDoPedido(p);
   const entrega = /entrega/i.test(p.tipo || "");
   const total  = p.subtotal + (entrega ? taxa : 0);
   const troco  = trocoDe(p.pagamento, total);
@@ -245,7 +253,7 @@ function comandaTexto(p, num, semAcentos) {
 
 /* ---- versão bonita em HTML (é o que sai no botão "Imprimir comanda") ---- */
 function comandaHTML(p, num) {
-  const taxa = taxaAtual();
+  const taxa = taxaDoPedido(p);
   const entrega = /entrega/i.test(p.tipo || "");
   const total = p.subtotal + (entrega ? taxa : 0);
   const troco = trocoDe(p.pagamento, total);
