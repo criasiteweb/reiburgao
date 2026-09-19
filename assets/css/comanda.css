@@ -153,3 +153,7 @@ details.guia strong{color:var(--texto)}
   .papel .dado.troco span{font-size:12pt}
 
 }
+
+/* nome comprido quebra, mas o preço fica na mesma linha do início do item */
+.papel .lin > span{min-width:0;overflow-wrap:anywhere}
+.papel .lin > b{white-space:nowrap;flex:0 0 auto}
