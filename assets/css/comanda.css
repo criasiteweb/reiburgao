@@ -1,0 +1,136 @@
+/* =========================================================
+   Rei Burgão — MODO LOJA (tela + impressão 80mm)
+   Criasiteweb
+   ========================================================= */
+:root{
+  --preto:#0E0E10; --carvao:#16171B; --giz:#1E2025; --giz-claro:#26282E;
+  --linha:rgba(255,255,255,.09);
+  --amarelo:#FFC20E; --amarelo-forte:#FFD34D; --vermelho:#D8261C; --verde:#2FA96B;
+  --texto:#EDEAE2; --texto-suave:rgba(237,234,226,.62);
+  --raio:14px; --raio-g:22px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--preto);color:var(--texto);
+  font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+h1,h2{font-family:"Anton",Impact,sans-serif;font-weight:400;text-transform:uppercase;margin:0;line-height:1.1}
+:focus-visible{outline:2px solid var(--amarelo);outline-offset:3px;border-radius:8px}
+
+.envolve{max-width:640px;margin:0 auto;padding:0 16px 96px}
+
+/* ---- topo ---- */
+.topo{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
+  padding:12px 16px;background:rgba(14,14,16,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--linha);
+}
+.topo img{width:38px;height:38px;border-radius:10px}
+.topo strong{display:block;font-size:.95rem;line-height:1.15}
+.topo small{display:block;font-size:.72rem;color:var(--amarelo);letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.topo a.sair{margin-left:auto;font-size:.8rem;color:var(--texto-suave);text-decoration:none;border:1px solid var(--linha);padding:8px 12px;border-radius:999px}
+
+/* ---- blocos ---- */
+.bloco{background:var(--carvao);border:1px solid var(--linha);border-radius:var(--raio-g);padding:18px;margin-top:18px}
+.bloco > h2{font-size:1.15rem;margin-bottom:4px}
+.bloco > p.ajuda{font-size:.85rem;color:var(--texto-suave);margin:0 0 14px}
+
+textarea{
+  width:100%;min-height:150px;resize:vertical;border-radius:var(--raio);
+  background:var(--giz);border:1px solid var(--linha);color:var(--texto);
+  padding:14px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.9rem;line-height:1.5;
+}
+textarea::placeholder{color:rgba(237,234,226,.35)}
+
+.botoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+button{
+  font:inherit;font-weight:700;cursor:pointer;border:1px solid var(--linha);
+  background:var(--giz-claro);color:var(--texto);
+  padding:14px 18px;border-radius:999px;min-height:52px;flex:1 1 auto;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+button:active{transform:translateY(1px)}
+button.principal{background:var(--amarelo);color:#161200;border-color:transparent}
+button.forte{background:var(--vermelho);color:#fff;border-color:transparent}
+button.larga{flex-basis:100%}
+
+.campos{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:14px}
+.campo{display:flex;flex-direction:column;gap:6px;flex:1 1 180px}
+.campo span{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--texto-suave);font-weight:800}
+.campo input{
+  background:var(--giz);border:1px solid var(--linha);color:var(--texto);
+  border-radius:12px;padding:12px 14px;font:inherit;min-height:48px;
+}
+.marca{display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--texto-suave);flex:1 1 200px}
+.marca input{width:22px;height:22px;accent-color:var(--amarelo)}
+
+.aviso{margin-top:12px;font-size:.88rem;padding:12px 14px;border-radius:12px;
+  background:rgba(47,169,107,.12);border:1px solid rgba(47,169,107,.4);color:#9BE3BF}
+.aviso[data-erro="true"]{background:rgba(216,38,28,.12);border-color:rgba(216,38,28,.45);color:#FFB3AD}
+
+/* ---- prévia do papel ---- */
+.area-papel{margin-top:16px;display:flex;justify-content:center}
+.papel{
+  width:100%;max-width:340px;background:#fff;color:#111;border-radius:6px;
+  padding:16px 14px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-size:12px;line-height:1.45;box-shadow:0 18px 44px rgba(0,0,0,.5);
+}
+.papel .cab{text-align:center;margin-bottom:10px}
+.papel .cab strong{display:block;font-size:15px;letter-spacing:.04em}
+.papel .cab span{display:block;font-size:10.5px;color:#333}
+.papel hr{border:0;border-top:1px dashed #999;margin:9px 0}
+.papel .lin{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.papel .lin.num{font-size:11px;color:#333}
+.papel .lin.forte{font-weight:700}
+.papel .lin.total{font-size:15px;font-weight:800;margin-top:3px}
+.papel .item{margin:7px 0}
+.papel .sub{font-size:11px;color:#333;padding-left:12px}
+.papel .sub.obs{font-weight:700;color:#000}
+.papel .dado{display:flex;gap:8px;font-size:11.5px;margin:2px 0}
+.papel .dado i{font-style:normal;font-weight:700;min-width:82px;text-transform:uppercase;font-size:10px;letter-spacing:.04em;padding-top:1px}
+.papel .rodape{text-align:center;font-size:10.5px;color:#444;margin-top:10px}
+.papel .cru{white-space:pre-wrap;font-size:11.5px}
+
+/* ---- histórico ---- */
+ul.lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+ul.lista button{
+  width:100%;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:14px;
+  background:var(--giz);font-weight:500;text-align:left;min-height:56px;
+}
+ul.lista b{color:var(--amarelo);font-family:ui-monospace,monospace}
+ul.lista span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ul.lista i{font-style:normal;color:var(--texto-suave);font-size:.8rem}
+
+details.guia{margin-top:18px;background:var(--carvao);border:1px solid var(--linha);border-radius:var(--raio-g);padding:0 18px}
+details.guia summary{cursor:pointer;padding:18px 0;font-weight:700;list-style:none}
+details.guia summary::-webkit-details-marker{display:none}
+details.guia summary::after{content:" ▾";color:var(--amarelo)}
+details.guia[open] summary::after{content:" ▴"}
+details.guia ol{margin:0 0 18px;padding-left:20px;color:var(--texto-suave);font-size:.9rem}
+details.guia li{margin-bottom:8px}
+details.guia strong{color:var(--texto)}
+
+/* =========================================================
+   IMPRESSÃO — bobina de 80mm
+   ========================================================= */
+@media print{
+  @page{ size: 80mm auto; margin: 0; }
+  html,body{background:#fff !important}
+  body *{visibility:hidden !important}
+  .papel, .papel *{visibility:visible !important}
+  .papel{
+    position:absolute;left:0;top:0;
+    width:72mm;max-width:72mm;margin:0;padding:2mm 2mm 8mm;
+    box-shadow:none;border-radius:0;background:#fff;color:#000;
+    font-size:9.5pt;line-height:1.35;
+  }
+  .papel .cab strong{font-size:13pt}
+  .papel .cab span{font-size:8pt;color:#000}
+  .papel .lin.total{font-size:13pt}
+  .papel .sub,.papel .dado,.papel .lin.num{color:#000}
+  .papel hr{border-top:1px dashed #000}
+}
