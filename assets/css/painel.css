@@ -154,3 +154,5 @@
 .resumo .dia{margin-left:auto;text-transform:uppercase;letter-spacing:.1em;font-size:11.5px}
 
 .pedido .acoes .reabrir{flex:1 1 100%;background:transparent;color:var(--amarelo);border-color:rgba(255,194,14,.4)}
+.pedido .acoes .avisar{flex:1 1 100%;background:rgba(47,169,107,.14);color:#6BD3A0;border-color:rgba(47,169,107,.35)}
+.pedido .fone{color:var(--texto-suave);font-size:14px;font-weight:600}
