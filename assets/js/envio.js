@@ -34,6 +34,7 @@ window.enviarParaPainel = async function (dados) {
       endereco: limitar(dados.endereco, 200),
       pagamento: limitar(dados.pagamento, 80),
       total:    Number(dados.total) || 0,
+      taxa:     Number(dados.taxa) || 0,
       itens:    Number(dados.itens) || 0
     });
     return true;
