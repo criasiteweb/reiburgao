@@ -8,7 +8,10 @@
 
 const LOJA = {
   nome: "Rei Burgão",
-  whatsapp: "5511976385099",   // confirmado no Google e na bio do Instagram          // (11) 97638-5099
+  /* ⚠️ MODO TESTE — este é o WhatsApp do Matheus (Criasiteweb), para os
+     pedidos de teste NÃO caírem no celular do dono da lanchonete.
+     ANTES DE ENTREGAR, trocar de volta para: "5511976385099"  */
+  whatsapp: "5511988097416",   // TESTE — número real da loja: 5511976385099
   endereco: "R. Eunice Cerqueira Innocencio, 245 — Jd. Quaresmeira, Suzano/SP",
   abre: 18,                            // hora de abertura (Google)
   fecha: 23,                           // [CONFIRMAR] horário de fechamento
@@ -394,6 +397,29 @@ function enviarPedido(e) {
   st.dataset.erro = "false";
   st.textContent = "Abrindo o WhatsApp com seu pedido…";
   window.open(`https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+
+  /* confirmação na própria tela, para o cliente não ficar sem resposta
+     caso o WhatsApp demore a abrir ou o navegador bloqueie a janela */
+  mostrarConfirmacao(f.nome.value.trim());
+}
+
+function mostrarConfirmacao(nome) {
+  const caixa = document.createElement("div");
+  caixa.className = "confirmado";
+  caixa.innerHTML = `
+    <div class="confirmado-cartao" role="dialog" aria-live="polite">
+      <div class="confirmado-selo">✓</div>
+      <h3>Pedido enviado${nome ? ", " + nome.split(" ")[0] : ""}!</h3>
+      <p>Seu pedido já chegou no balcão do <strong>${LOJA.nome}</strong>.
+         Em instantes a gente confirma por WhatsApp com o tempo de preparo.</p>
+      <p class="confirmado-dica">Não abriu o WhatsApp? Toque no botão abaixo.</p>
+      <a class="confirmado-btn" href="https://wa.me/${LOJA.whatsapp}" target="_blank" rel="noopener">Abrir o WhatsApp da loja</a>
+      <button type="button" class="confirmado-fechar">Fechar</button>
+    </div>`;
+  document.body.appendChild(caixa);
+  const sair = () => caixa.remove();
+  caixa.querySelector(".confirmado-fechar").addEventListener("click", sair);
+  caixa.addEventListener("click", e => { if (e.target === caixa) sair(); });
 }
 
 /* ========================= status aberto / fechado ========================= */
