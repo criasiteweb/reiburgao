@@ -17,6 +17,50 @@ const LOJA = {
   fecha: 23,                           // [CONFIRMAR] horário de fechamento
   diasFechados: [],                    // [CONFIRMAR] ex.: [1] fecha segunda (0=dom)
 
+  /* =======================================================
+     TABELA DE ENTREGA  —  é só isto que o Matheus preenche
+     -------------------------------------------------------
+     Cada bairro recebe o valor da taxa do motoboy.
+       5      -> cobra R$ 5,00
+       null   -> aparece "a combinar" (ainda sem preço)
+     Para tirar um bairro do atendimento, basta apagar a linha.
+     Para acrescentar, copiar uma linha e trocar o nome.
+     ======================================================= */
+  entrega: {
+    ativa: true,
+    raioKm: 10,                        // [CONFIRMAR com o dono]
+    cidades: {
+      "Suzano": {                      // [CONFIRMAR] bairros e valores
+        "Jardim Quaresmeira": null,
+        "Vila Amorim": null,
+        "Centro": null,
+        "Jardim Imperador": null,
+        "Cidade Miguel Badra": null,
+        "Parque Maria Helena": null,
+        "Vila Urupês": null,
+        "Jardim Revista": null,
+        "Boa Vista": null,
+        "Casa Branca": null
+      },
+      "Poá": {
+        "Centro": null,
+        "Vila Varela": null,
+        "Jardim Nova Poá": null,
+        "Cidade Kemel": null,
+        "Vila Perracini": null
+      },
+      "Mogi das Cruzes": {
+        "Centro": null,
+        "Braz Cubas": null,
+        "Jundiapeba": null,
+        "César de Souza": null,
+        "Vila Suíssa": null
+      }
+    },
+    /* quando o cliente diz que o bairro dele não está na lista */
+    foraDaLista: null
+  },
+
   /* Impressão de comanda (modo loja em comanda.html).
      false = o pedido no WhatsApp continua igual, e a loja imprime
              colando o texto em comanda.html.
@@ -309,6 +353,7 @@ function pintarCarrinho() {
   const t = subtotal();
   $("[data-subtotal]").textContent = reais(t);
   $("[data-total-flutuante]").textContent = reais(t);
+  if (typeof atualizarTaxa === "function") atualizarTaxa();
   $$("[data-contador]").forEach(el => el.textContent = String(totalItens()));
   $("[data-flutuante]").hidden = totalItens() === 0;
 }
@@ -329,6 +374,172 @@ function formatarFone(v) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
+
+/* =========================================================
+   Taxa de entrega por bairro
+   A tabela fica em LOJA.entrega (no topo deste arquivo).
+   ========================================================= */
+const SEM_LISTA = "__outro__";
+
+
+/* ---- sugestão de bairro a partir da rua (ViaCEP, grátis e sem cadastro) ---- */
+let buscaAgendada = null;
+let ultimaBusca = "";
+
+function avisoBusca(texto, achou) {
+  const el = $("[data-busca-bairro]");
+  if (!el) return;
+  el.hidden = !texto;
+  el.textContent = texto;
+  el.dataset.achou = achou ? "sim" : "nao";
+}
+
+function pedirBairro() {
+  clearTimeout(buscaAgendada);
+  buscaAgendada = setTimeout(buscarBairro, 600);   // espera parar de digitar
+}
+
+async function buscarBairro() {
+  const campoRua = document.querySelector("[name=endereco]");
+  const selCidade = $("[data-cidade]");
+  if (!campoRua || !selCidade) return;
+
+  const rua = campoRua.value.trim().replace(/^(rua|r\.|av\.?|avenida|travessa|tv\.?)\s+/i, "");
+  const cidade = selCidade.value;
+  if (rua.length < 4) { avisoBusca("", false); return; }
+
+  const chave = cidade + "|" + rua.toLowerCase();
+  if (chave === ultimaBusca) return;
+  ultimaBusca = chave;
+
+  avisoBusca("Procurando o bairro…", false);
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/SP/${encodeURIComponent(cidade)}/${encodeURIComponent(rua)}/json/`);
+    const lista = await r.json();
+    if (!Array.isArray(lista) || !lista.length) {
+      avisoBusca("Não achei essa rua — escolha o bairro na lista abaixo.", false);
+      return;
+    }
+    /* bairros distintos que aquela rua atravessa */
+    const bairros = [...new Set(lista.map(x => x.bairro).filter(Boolean))];
+    if (!bairros.length) { avisoBusca("", false); return; }
+
+    aplicarBairro(bairros[0]);
+    avisoBusca(bairros.length === 1
+      ? `Bairro encontrado: ${bairros[0]}`
+      : `Essa rua passa por ${bairros.length} bairros — confira se é ${bairros[0]}.`, true);
+  } catch (e) {
+    avisoBusca("", false);   // sem internet para consultar: o cliente escolhe na mão
+  }
+}
+
+/* marca o bairro no seletor; se não estiver na tabela, acrescenta */
+function aplicarBairro(nome) {
+  const sel = $("[data-bairro]");
+  if (!sel) return;
+  const igual = [...sel.options].find(o =>
+    o.value.toLowerCase() === String(nome).toLowerCase());
+  if (igual) { sel.value = igual.value; }
+  else {
+    const op = document.createElement("option");
+    op.value = nome; op.textContent = nome; op.dataset.deFora = "sim";
+    sel.insertBefore(op, sel.options[sel.options.length - 1]);
+    sel.value = nome;
+  }
+  $("[data-campo-outro]").hidden = sel.value !== SEM_LISTA;
+  atualizarTaxa();
+}
+
+function montarEntrega() {
+  const selCidade = $("[data-cidade]");
+  const selBairro = $("[data-bairro]");
+  if (!selCidade || !selBairro || !LOJA.entrega || !LOJA.entrega.ativa) return;
+
+  const cidades = Object.keys(LOJA.entrega.cidades);
+  selCidade.innerHTML = cidades.map(c => `<option value="${c}">${c}</option>`).join("");
+  preencherBairros();
+
+  selCidade.addEventListener("change", () => {
+    preencherBairros(); ultimaBusca = ""; buscarBairro(); atualizarTaxa();
+  });
+  selBairro.addEventListener("change", () => {
+    $("[data-campo-outro]").hidden = selBairro.value !== SEM_LISTA;
+    atualizarTaxa();
+  });
+  atualizarTaxa();
+}
+
+function preencherBairros() {
+  const cidade = $("[data-cidade]").value;
+  const bairros = Object.keys(LOJA.entrega.cidades[cidade] || {});
+  $("[data-bairro]").innerHTML =
+    bairros.map(b => `<option value="${b}">${b}</option>`).join("") +
+    `<option value="${SEM_LISTA}">Meu bairro não está na lista</option>`;
+  $("[data-campo-outro]").hidden = true;
+}
+
+/* devolve o valor da taxa, ou null quando é "a combinar" */
+function taxaEntrega() {
+  if (!LOJA.entrega || !LOJA.entrega.ativa) return null;
+  if (tipoEscolhido() !== "Entrega") return 0;
+  const bairro = $("[data-bairro]") ? $("[data-bairro]").value : "";
+  if (!bairro) return null;
+  if (bairro === SEM_LISTA) return LOJA.entrega.foraDaLista;
+  const cidade = $("[data-cidade]").value;
+  const v = (LOJA.entrega.cidades[cidade] || {})[bairro];
+  return (typeof v === "number") ? v : null;
+}
+
+function bairroEscolhido() {
+  const sel = $("[data-bairro]");
+  if (!sel) return "";
+  if (sel.value === SEM_LISTA) {
+    const campo = document.querySelector("[name=bairroOutro]");
+    return campo ? campo.value.trim() : "";
+  }
+  return sel.value;
+}
+
+function tipoEscolhido() {
+  const m = document.querySelector("[name=tipo]:checked");
+  return m && m.value === "Entrega" ? "Entrega" : "Retirada";
+}
+
+function atualizarTaxa() {
+  const entrega = tipoEscolhido() === "Entrega";
+  const taxa = taxaEntrega();
+  const linhaTaxa  = $("[data-linha-taxa]");
+  const linhaGeral = $("[data-linha-geral]");
+  const pendente   = $("[data-pendente]");
+  const aviso      = $("[data-aviso-entrega]");
+  if (!linhaTaxa) return;
+
+  linhaTaxa.hidden  = !entrega;
+  linhaGeral.hidden = !entrega;
+  if (pendente) pendente.hidden = !(entrega && taxa === null);
+
+  if (!entrega) { atualizarTotais(); return; }
+
+  $("[data-taxa-valor]").textContent = taxa === null ? "a combinar" : reais(taxa);
+  $("[data-total-geral]").textContent = reais(subtotal() + (taxa || 0));
+
+  if (aviso) {
+    const fora = $("[data-bairro]") && $("[data-bairro]").value === SEM_LISTA;
+    aviso.hidden = !fora;
+    if (fora) aviso.textContent =
+      `A loja entrega num raio de cerca de ${LOJA.entrega.raioKm} km. Confirmamos a taxa pelo WhatsApp antes de preparar.`;
+  }
+  atualizarTotais();
+}
+
+/* o rodapé do carrinho também precisa refletir a taxa */
+function atualizarTotais() {
+  const entrega = tipoEscolhido() === "Entrega";
+  const taxa = entrega ? (taxaEntrega() || 0) : 0;
+  const flut = $("[data-total-flutuante]");
+  if (flut) flut.textContent = reais(subtotal() + taxa);
+}
+
 function enviarPedido(e) {
   e.preventDefault();
   const f = e.target;
@@ -346,8 +557,9 @@ function enviarPedido(e) {
 
   const tipo = f.tipo.value;
   if (tipo === "Entrega") {
-    if (!f.endereco.value.trim()) return erro(f.endereco, "Precisamos do endereço para entregar.");
-    if (!f.bairro.value.trim()) return erro(f.bairro, "Informe o bairro da entrega.");
+    if (!f.endereco.value.trim()) return erro(f.endereco, "Diga o nome da rua para entregarmos.");
+    if (!f.numero.value.trim())   return erro(f.numero, "Falta o número da casa ou do prédio.");
+    if (!bairroEscolhido())       return erro(f.bairro, "Escolha o bairro da entrega.");
   }
 
   const linhas = carrinho.map(l => {
@@ -358,17 +570,26 @@ function enviarPedido(e) {
     return partes.join("\n");
   });
 
+  const taxa = tipo === "Entrega" ? taxaEntrega() : 0;
+  const enderecoCheio = [
+    `${f.endereco.value.trim()}, ${f.numero.value.trim()}`,
+    f.complemento.value.trim(),
+    `${bairroEscolhido()} — ${$("[data-cidade]").value}`
+  ].filter(Boolean).join(" — ");
+
   const msg = [
     `*PEDIDO — ${LOJA.nome}*`,
     "",
     ...linhas,
     "",
     `*Subtotal: ${reais(subtotal())}*`,
+    tipo === "Entrega" ? `*Taxa de entrega: ${taxa === null ? "a combinar" : reais(taxa)}*` : "",
+    tipo === "Entrega" && taxa !== null ? `*Total: ${reais(subtotal() + taxa)}*` : "",
     "",
     `*Cliente:* ${f.nome.value.trim()}`,
     `*WhatsApp:* ${formatarFone(f.fone.value)}`,
     `*Como receber:* ${tipo}`,
-    tipo === "Entrega" ? `*Endereço:* ${f.endereco.value.trim()} — ${f.bairro.value.trim()}` : "",
+    tipo === "Entrega" ? `*Endereço:* ${enderecoCheio}` : "",
     `*Pagamento:* ${f.pagamento.value}${f.pagamento.value === "Dinheiro" && f.troco.value.trim() ? ` (troco para ${f.troco.value.trim()})` : ""}`,
     f.obs.value.trim() ? `*Observações:* ${f.obs.value.trim()}` : "",
     "",
@@ -387,9 +608,9 @@ function enviarPedido(e) {
       cliente: f.nome.value.trim(),
       fone: formatarFone(f.fone.value),
       tipo,
-      endereco: tipo === "Entrega" ? `${f.endereco.value.trim()} — ${f.bairro.value.trim()}` : "",
+      endereco: tipo === "Entrega" ? enderecoCheio : "",
       pagamento: f.pagamento.value + (f.pagamento.value === "Dinheiro" && f.troco.value.trim() ? ` (troco para ${f.troco.value.trim()})` : ""),
-      total: subtotal(),
+      total: subtotal() + (taxa || 0),
       itens: carrinho.reduce((s, l) => s + l.q, 0)
     });
   }
@@ -505,6 +726,10 @@ document.addEventListener("DOMContentLoaded", () => {
     $(".aviso-taxa").hidden = !entrega;
     const opcCartao = [...form.pagamento.options].find(o => o.value.startsWith("Cartão"));
     if (opcCartao) { opcCartao.value = opcCartao.textContent = entrega ? "Cartão na entrega" : "Cartão"; }
+    atualizarTaxa();
   }));
+  document.querySelector("[name=bairroOutro]").addEventListener("input", atualizarTaxa);
+  document.querySelector("[name=endereco]").addEventListener("input", pedirBairro);
+  montarEntrega();
   form.pagamento.addEventListener("change", () => { troco.hidden = form.pagamento.value !== "Dinheiro"; });
 });
