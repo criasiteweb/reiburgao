@@ -31,7 +31,7 @@ const LOJA = {
     raioKm: 10,                        // [CONFIRMAR com o dono]
     cidades: {
       "Suzano": {                      // [CONFIRMAR] bairros e valores
-        "Jardim Quaresmeira": null,
+        "Jardim Quaresmeira": 3,      // informado pelo Matheus — [CONFIRMAR com o dono]
         "Vila Amorim": null,
         "Centro": null,
         "Jardim Imperador": null,
