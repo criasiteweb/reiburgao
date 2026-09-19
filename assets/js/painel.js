@@ -246,7 +246,7 @@ function cartao(p) {
       <span class="tipo ${entrega ? "t-entrega" : "t-retirada"}">${entrega ? "🛵 Entrega" : "🏠 Retirada"}</span>
     </div>
 
-    ${p.fone ? `<a class="fone" href="https://wa.me/55${String(p.fone).replace(/\D/g, "")}" target="_blank" rel="noopener">${esc(p.fone)}</a>` : ""}
+    ${p.fone ? `<span class="fone">${esc(p.fone)}</span>` : ""}
     ${entrega && p.endereco ? `<p class="endereco">${esc(p.endereco)}</p>` : ""}
 
     <p class="itens">${resumoItens(p)}</p>
@@ -261,6 +261,7 @@ function cartao(p) {
       <button type="button" class="principal" data-imprimir="${esc(p.id)}">🖨️ Imprimir</button>
       ${etapa.proxima ? `<button type="button" data-avancar="${esc(p.id)}">${esc(etapa.acao)}</button>` : ""}
       ${p.status === "novo" ? `<button type="button" class="recusar" data-recusar="${esc(p.id)}">Recusar</button>` : ""}
+      ${p.fone ? `<button type="button" class="avisar" data-avisar="${esc(p.id)}">📲 Avisar cliente</button>` : ""}
       ${etapa.reabre ? `<button type="button" class="reabrir" data-reabrir="${esc(p.id)}">↩︎ Reabrir pedido</button>` : ""}
     </div>
   </article>`;
@@ -335,6 +336,13 @@ el("[data-lista]").addEventListener("click", async e => {
     return;
   }
 
+  const bw = e.target.closest("[data-avisar]");
+  if (bw) {
+    const p = achar(bw.dataset.avisar);
+    if (p) avisarCliente(p);
+    return;
+  }
+
   const bv = e.target.closest("[data-reabrir]");
   if (bv) {
     const p = achar(bv.dataset.reabrir);
@@ -348,6 +356,31 @@ async function mudarStatus(id, status) {
   } catch (e) {
     alert("Não consegui salvar a mudança. Verifique a internet e tente de novo.");
   }
+}
+
+
+/* ========================= avisar o cliente ========================= */
+/* Abre o WhatsApp do cliente com a mensagem já escrita, conforme a etapa.
+   É um toque do atendente — nada é enviado sozinho. */
+const RECADOS = {
+  novo: p => `Oi ${primeiroNome(p)}! 👑 Recebemos seu pedido *#${p.numero}* aqui no Rei Burgão. Já vamos preparar!`,
+  preparando: p => `Oi ${primeiroNome(p)}! 👑 Seu pedido *#${p.numero}* já está sendo preparado. ⏱️ Fica pronto em cerca de 40 minutos.`,
+  saiu: p => /entrega/i.test(p.tipo || "")
+    ? `Oi ${primeiroNome(p)}! 🛵 Seu pedido *#${p.numero}* saiu para entrega e chega em instantes. Bom apetite!`
+    : `Oi ${primeiroNome(p)}! 🍔 Seu pedido *#${p.numero}* está pronto para retirada. Te esperamos!`,
+  concluido: p => `Oi ${primeiroNome(p)}! Obrigado pela preferência 👑 Qualquer coisa é só chamar. Bom apetite!`,
+  recusado: p => `Oi ${primeiroNome(p)}! Infelizmente não vamos conseguir atender seu pedido *#${p.numero}* agora. Desculpe pelo transtorno! 🙏`
+};
+
+function primeiroNome(p) {
+  return String(p.cliente || "").trim().split(/\s+/)[0] || "tudo bem";
+}
+
+function avisarCliente(p) {
+  const numero = String(p.fone || "").replace(/\D/g, "");
+  if (numero.length < 10) return alert("Este pedido não veio com um WhatsApp válido.");
+  const recado = (RECADOS[p.status] || RECADOS.novo)(p);
+  window.open(`https://wa.me/55${numero}?text=${encodeURIComponent(recado)}`, "_blank", "noopener");
 }
 
 /* ========================= imprimir ========================= */
