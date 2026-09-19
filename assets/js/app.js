@@ -8,7 +8,7 @@
 
 const LOJA = {
   nome: "Rei Burgão",
-  whatsapp: "5511976385099",          // (11) 97638-5099
+  whatsapp: "5511976385099",   // confirmado no Google e na bio do Instagram          // (11) 97638-5099
   endereco: "R. Eunice Cerqueira Innocencio, 245 — Jd. Quaresmeira, Suzano/SP",
   abre: 18,                            // hora de abertura (Google)
   fecha: 23,                           // [CONFIRMAR] horário de fechamento
@@ -44,69 +44,69 @@ const GRUPOS = [
 /* ---- itens ---- */
 const CARDAPIO = [
   /* ARTESANAIS */
-  { id:"a1", g:"artesanais", n:"Rei Burguer + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela e fritas.", p:22.90, add:"lanche", tag:"Mais pedido" },
-  { id:"a2", g:"artesanais", n:"Rei Salada + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela, alface, tomate e fritas.", p:24.90, add:"lanche" },
-  { id:"a3", g:"artesanais", n:"Rei Egg + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela, ovo e fritas.", p:25.90, add:"lanche" },
-  { id:"a4", g:"artesanais", n:"Rei Cheddar + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela, cheddar e fritas.", p:25.90, add:"lanche" },
-  { id:"a5", g:"artesanais", n:"Rei Bacon + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela, bacon e fritas.", p:28.90, add:"lanche" },
-  { id:"a6", g:"artesanais", n:"Rei Frango Salada + Fritas", d:"Pão de brioche GG, maionese temperada, frango, queijo mussarela, alface, tomate e fritas.", p:27.90, add:"lanche" },
-  { id:"a7", g:"artesanais", n:"Rei Frango Cheddar + Fritas", d:"Pão de brioche GG, maionese temperada, frango, queijo mussarela, cheddar e fritas.", p:28.90, add:"lanche" },
-  { id:"a8", g:"artesanais", n:"Rei Frango Egg + Fritas", d:"Pão de brioche GG, maionese temperada, frango, queijo mussarela, ovo e fritas.", p:29.90, add:"lanche" },
-  { id:"a9", g:"artesanais", n:"Rei Frango Bacon + Fritas", d:"Pão de brioche GG, maionese temperada, frango, queijo mussarela, bacon e fritas.", p:33.90, add:"lanche" },
-  { id:"a10",g:"artesanais", n:"Mega Rei + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 200g, bacon, ovo, cebola empanada, queijo mussarela e cheddar, alface, tomate e fritas.", p:34.90, add:"lanche", tag:"O maior" },
+  { id:"a1", g:"artesanais", n:"Rei Burguer + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela e fritas.", p:22.90, add:"lanche", tag:"Mais pedido" , f:"rei-burguer" },
+  { id:"a2", g:"artesanais", n:"Rei Salada + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela, alface, tomate e fritas.", p:24.90, add:"lanche" , f:"rei-salada" },
+  { id:"a3", g:"artesanais", n:"Rei Egg + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela, ovo e fritas.", p:25.90, add:"lanche" , f:"rei-egg" },
+  { id:"a4", g:"artesanais", n:"Rei Cheddar + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela, cheddar e fritas.", p:25.90, add:"lanche" , f:"rei-cheddar" },
+  { id:"a5", g:"artesanais", n:"Rei Bacon + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 150g, queijo mussarela, bacon e fritas.", p:28.90, add:"lanche" , f:"rei-bacon" },
+  { id:"a6", g:"artesanais", n:"Rei Frango Salada + Fritas", d:"Pão de brioche GG, maionese temperada, frango, queijo mussarela, alface, tomate e fritas.", p:27.90, add:"lanche" , f:"frango-salada" },
+  { id:"a7", g:"artesanais", n:"Rei Frango Cheddar + Fritas", d:"Pão de brioche GG, maionese temperada, frango, queijo mussarela, cheddar e fritas.", p:28.90, add:"lanche" , f:"frango-cheddar" },
+  { id:"a8", g:"artesanais", n:"Rei Frango Egg + Fritas", d:"Pão de brioche GG, maionese temperada, frango, queijo mussarela, ovo e fritas.", p:29.90, add:"lanche" , f:"frango-egg" },
+  { id:"a9", g:"artesanais", n:"Rei Frango Bacon + Fritas", d:"Pão de brioche GG, maionese temperada, frango, queijo mussarela, bacon e fritas.", p:33.90, add:"lanche" , f:"frango-bacon" },
+  { id:"a10",g:"artesanais", n:"Mega Rei + Fritas", d:"Pão de brioche GG, maionese temperada, hambúrguer 200g, bacon, ovo, cebola empanada, queijo mussarela e cheddar, alface, tomate e fritas.", p:34.90, add:"lanche", tag:"O maior" , f:"mega-rei" },
 
   /* TRADICIONAIS */
-  { id:"t1", g:"tradicionais", n:"X Burguer", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g e queijo.", p:14.90, add:"lanche" },
-  { id:"t2", g:"tradicionais", n:"X Salada", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo e salada.", p:16.90, add:"lanche" },
-  { id:"t3", g:"tradicionais", n:"X Egg", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo e ovo.", p:16.90, add:"lanche" },
-  { id:"t4", g:"tradicionais", n:"X Cheddar", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo e cheddar.", p:16.90, add:"lanche" },
-  { id:"t5", g:"tradicionais", n:"X Bacon", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo e bacon.", p:19.90, add:"lanche" },
-  { id:"t6", g:"tradicionais", n:"X Egg Bacon", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo, ovo e bacon.", p:21.90, add:"lanche" },
+  { id:"t1", g:"tradicionais", n:"X Burguer", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g e queijo.", p:14.90, add:"lanche" , f:"x-burguer" },
+  { id:"t2", g:"tradicionais", n:"X Salada", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo e salada.", p:16.90, add:"lanche" , f:"x-salada" },
+  { id:"t3", g:"tradicionais", n:"X Egg", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo e ovo.", p:16.90, add:"lanche" , f:"x-egg" },
+  { id:"t4", g:"tradicionais", n:"X Cheddar", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo e cheddar.", p:16.90, add:"lanche" , f:"x-cheddar" },
+  { id:"t5", g:"tradicionais", n:"X Bacon", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo e bacon.", p:19.90, add:"lanche" , f:"x-bacon" },
+  { id:"t6", g:"tradicionais", n:"X Egg Bacon", d:"Pão de hambúrguer GG, maionese temperada, 2 hambúrgueres 56g, queijo, ovo e bacon.", p:21.90, add:"lanche" , f:"x-egg-bacon" },
 
   /* HOT DOG */
-  { id:"h1", g:"hotdog", n:"Hot Dog Tradicional", d:"Pão de hot dog, maionese temperada, catchup, 1 salsicha, milho, cheddar, purê e batata palha.", p:9.90, add:"dog" },
-  { id:"h2", g:"hotdog", n:"Dogão Tradicional", d:"Pão de dogão, maionese temperada, catchup, 2 salsichas, milho, purê, cheddar e batata palha.", p:14.90, add:"dog" },
+  { id:"h1", g:"hotdog", n:"Hot Dog Tradicional", d:"Pão de hot dog, maionese temperada, catchup, 1 salsicha, milho, cheddar, purê e batata palha.", p:9.90, add:"dog" , f:"hotdog" },
+  { id:"h2", g:"hotdog", n:"Dogão Tradicional", d:"Pão de dogão, maionese temperada, catchup, 2 salsichas, milho, purê, cheddar e batata palha.", p:14.90, add:"dog" , f:"hotdog" },
 
   /* COMBOS */
-  { id:"c1", g:"combos", n:"Combo Tradicional — 2 lanches", d:"Hambúrguer 56g tradicional. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:64.90, escolhas:2 },
-  { id:"c2", g:"combos", n:"Combo Tradicional — 3 lanches", d:"Hambúrguer 56g tradicional. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:79.90, escolhas:3 },
-  { id:"c3", g:"combos", n:"Combo Tradicional — 4 lanches", d:"Hambúrguer 56g tradicional. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:99.90, escolhas:4 },
-  { id:"c4", g:"combos", n:"Combo Tradicional — 5 lanches", d:"Hambúrguer 56g tradicional. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:109.90, escolhas:5 },
-  { id:"c5", g:"combos", n:"Combo Artesanal — 2 lanches", d:"Hambúrguer artesanal 150g. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:79.90, escolhas:2, tag:"Família" },
-  { id:"c6", g:"combos", n:"Combo Artesanal — 3 lanches", d:"Hambúrguer artesanal 150g. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:99.90, escolhas:3 },
-  { id:"c7", g:"combos", n:"Combo Artesanal — 4 lanches", d:"Hambúrguer artesanal 150g. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:119.90, escolhas:4 },
-  { id:"c8", g:"combos", n:"Combo Artesanal — 5 lanches", d:"Hambúrguer artesanal 150g. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:149.90, escolhas:5 },
+  { id:"c1", g:"combos", n:"Combo Tradicional — 2 lanches", d:"Hambúrguer 56g tradicional. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:64.90, escolhas:2 , f:"combo-tradicional" },
+  { id:"c2", g:"combos", n:"Combo Tradicional — 3 lanches", d:"Hambúrguer 56g tradicional. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:79.90, escolhas:3 , f:"combo-tradicional" },
+  { id:"c3", g:"combos", n:"Combo Tradicional — 4 lanches", d:"Hambúrguer 56g tradicional. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:99.90, escolhas:4 , f:"combo-tradicional" },
+  { id:"c4", g:"combos", n:"Combo Tradicional — 5 lanches", d:"Hambúrguer 56g tradicional. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:109.90, escolhas:5 , f:"combo-tradicional" },
+  { id:"c5", g:"combos", n:"Combo Artesanal — 2 lanches", d:"Hambúrguer artesanal 150g. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:79.90, escolhas:2, tag:"Família" , f:"combo-artesanal" },
+  { id:"c6", g:"combos", n:"Combo Artesanal — 3 lanches", d:"Hambúrguer artesanal 150g. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:99.90, escolhas:3 , f:"combo-artesanal" },
+  { id:"c7", g:"combos", n:"Combo Artesanal — 4 lanches", d:"Hambúrguer artesanal 150g. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:119.90, escolhas:4 , f:"combo-artesanal" },
+  { id:"c8", g:"combos", n:"Combo Artesanal — 5 lanches", d:"Hambúrguer artesanal 150g. Acompanha fritas, nuggets, anel de cebola, molho e refrigerante.", p:149.90, escolhas:5 , f:"combo-artesanal" },
 
   /* PORÇÕES */
-  { id:"p1", g:"porcoes", n:"Fritas Simples P (200g)", d:"Sal, maionese e catchup (opcional).", p:12.90 },
-  { id:"p2", g:"porcoes", n:"Fritas Simples M (350g)", d:"Sal, maionese e catchup (opcional).", p:17.90 },
-  { id:"p3", g:"porcoes", n:"Fritas Simples G (600g)", d:"Sal, maionese e catchup (opcional).", p:23.90 },
-  { id:"p4", g:"porcoes", n:"Fritas Completa P (250g)", d:"Sal, maionese, catchup, bacon e cheddar.", p:16.90 },
-  { id:"p5", g:"porcoes", n:"Fritas Completa M (400g)", d:"Sal, maionese, catchup, bacon e cheddar.", p:21.90 },
-  { id:"p6", g:"porcoes", n:"Fritas Completa G (650g)", d:"Sal, maionese, catchup, bacon e cheddar.", p:27.90 },
-  { id:"p7", g:"porcoes", n:"Nuggets Perdigão — 10 unidades", d:"Empanado crocante.", p:10.90 },
-  { id:"p8", g:"porcoes", n:"Nuggets Perdigão — 20 unidades", d:"Empanado crocante.", p:18.90 },
-  { id:"p9", g:"porcoes", n:"Nuggets Perdigão — 30 unidades", d:"Empanado crocante.", p:27.90 },
-  { id:"p10",g:"porcoes", n:"Cebola Empanada — 10 unidades", d:"Aneis empanados na hora.", p:13.90 },
-  { id:"p11",g:"porcoes", n:"Cebola Empanada — 20 unidades", d:"Aneis empanados na hora.", p:23.90 },
-  { id:"p12",g:"porcoes", n:"Cebola Empanada — 30 unidades", d:"Aneis empanados na hora.", p:32.90 },
+  { id:"p1", g:"porcoes", n:"Fritas Simples P (200g)", d:"Sal, maionese e catchup (opcional).", p:12.90 , f:"fritas" },
+  { id:"p2", g:"porcoes", n:"Fritas Simples M (350g)", d:"Sal, maionese e catchup (opcional).", p:17.90 , f:"fritas" },
+  { id:"p3", g:"porcoes", n:"Fritas Simples G (600g)", d:"Sal, maionese e catchup (opcional).", p:23.90 , f:"fritas" },
+  { id:"p4", g:"porcoes", n:"Fritas Completa P (250g)", d:"Sal, maionese, catchup, bacon e cheddar.", p:16.90 , f:"fritas-completa" },
+  { id:"p5", g:"porcoes", n:"Fritas Completa M (400g)", d:"Sal, maionese, catchup, bacon e cheddar.", p:21.90 , f:"fritas-completa" },
+  { id:"p6", g:"porcoes", n:"Fritas Completa G (650g)", d:"Sal, maionese, catchup, bacon e cheddar.", p:27.90 , f:"fritas-completa" },
+  { id:"p7", g:"porcoes", n:"Nuggets Perdigão — 10 unidades", d:"Empanado crocante.", p:10.90 , f:"nuggets" },
+  { id:"p8", g:"porcoes", n:"Nuggets Perdigão — 20 unidades", d:"Empanado crocante.", p:18.90 , f:"nuggets" },
+  { id:"p9", g:"porcoes", n:"Nuggets Perdigão — 30 unidades", d:"Empanado crocante.", p:27.90 , f:"nuggets" },
+  { id:"p10",g:"porcoes", n:"Cebola Empanada — 10 unidades", d:"Aneis empanados na hora.", p:13.90 , f:"cebola" },
+  { id:"p11",g:"porcoes", n:"Cebola Empanada — 20 unidades", d:"Aneis empanados na hora.", p:23.90 , f:"cebola" },
+  { id:"p12",g:"porcoes", n:"Cebola Empanada — 30 unidades", d:"Aneis empanados na hora.", p:32.90 , f:"cebola" },
 
   /* BEBIDAS */
-  { id:"b1", g:"bebidas", n:"Coca-Cola 2,5 litros", d:"", p:17.90 },
-  { id:"b2", g:"bebidas", n:"Coca-Cola 1 litro", d:"", p:11.90 },
-  { id:"b3", g:"bebidas", n:"Sprite 2 litros", d:"", p:15.90 },
-  { id:"b4", g:"bebidas", n:"Fanta laranja ou uva", d:"", p:15.90 },
-  { id:"b5", g:"bebidas", n:"Kuat 2 litros", d:"", p:11.90 },
-  { id:"b6", g:"bebidas", n:"Sukita 2 litros", d:"", p:11.90 },
-  { id:"b7", g:"bebidas", n:"Pet 1,5 litros", d:"", p:11.90 },
-  { id:"b8", g:"bebidas", n:"Dolly 2 litros", d:"", p:8.90 },
-  { id:"b9", g:"bebidas", n:"Refrigerante 600 ml", d:"", p:9.90 },
-  { id:"b10",g:"bebidas", n:"Lata 350 ml", d:"", p:5.90 },
-  { id:"b11",g:"bebidas", n:"Sufresh lata", d:"", p:5.00 },
-  { id:"b12",g:"bebidas", n:"Dollynho", d:"", p:3.50 },
-  { id:"b13",g:"bebidas", n:"Suco de caixa 1 litro", d:"", p:9.00 },
-  { id:"b14",g:"bebidas", n:"Heineken 330 ml", d:"", p:11.90 },
-  { id:"b15",g:"bebidas", n:"Cerveja 269 ml", d:"", p:5.00 }
+  { id:"b1", g:"bebidas", n:"Coca-Cola 2,5 litros", d:"", p:17.90 , f:"refri" },
+  { id:"b2", g:"bebidas", n:"Coca-Cola 1 litro", d:"", p:11.90 , f:"refri" },
+  { id:"b3", g:"bebidas", n:"Sprite 2 litros", d:"", p:15.90 , f:"sprite" },
+  { id:"b4", g:"bebidas", n:"Fanta laranja ou uva", d:"", p:15.90 , f:"laranja" },
+  { id:"b5", g:"bebidas", n:"Kuat 2 litros", d:"", p:11.90 , f:"refri" },
+  { id:"b6", g:"bebidas", n:"Sukita 2 litros", d:"", p:11.90 , f:"laranja" },
+  { id:"b7", g:"bebidas", n:"Pet 1,5 litros", d:"", p:11.90 , f:"refri" },
+  { id:"b8", g:"bebidas", n:"Dolly 2 litros", d:"", p:8.90 , f:"refri" },
+  { id:"b9", g:"bebidas", n:"Refrigerante 600 ml", d:"", p:9.90 , f:"refri" },
+  { id:"b10",g:"bebidas", n:"Lata 350 ml", d:"", p:5.90 , f:"lata" },
+  { id:"b11",g:"bebidas", n:"Sufresh lata", d:"", p:5.00 , f:"lata" },
+  { id:"b12",g:"bebidas", n:"Dollynho", d:"", p:3.50 , f:"dollynho" },
+  { id:"b13",g:"bebidas", n:"Suco de caixa 1 litro", d:"", p:9.00 , f:"suco" },
+  { id:"b14",g:"bebidas", n:"Heineken 330 ml", d:"", p:11.90 , f:"heineken" },
+  { id:"b15",g:"bebidas", n:"Cerveja 269 ml", d:"", p:5.00 , f:"cerveja" }
 ];
 
 /* ========================= utilidades ========================= */
@@ -139,15 +139,18 @@ function montarCardapio() {
         <div class="lista-itens">
           ${itens.map(i => `
             <button class="item" type="button" data-item="${i.id}">
-              <div class="item-corpo">
+              <span class="item-foto">
+                <img src="assets/img/fotos/${i.f}.jpg" alt="${i.n}" loading="lazy" decoding="async" width="560" height="420" />
                 ${i.tag ? `<span class="etiqueta">${i.tag}</span>` : ""}
-                <div class="item-nome">${i.n}</div>
-                ${i.d ? `<p class="item-desc">${i.d}</p>` : ""}
-              </div>
-              <div class="item-lado">
-                <span class="item-preco">${reais(i.p)}</span>
-                <span class="item-mais" aria-hidden="true">+</span>
-              </div>
+              </span>
+              <span class="item-corpo">
+                <span class="item-nome">${i.n}</span>
+                ${i.d ? `<span class="item-desc">${i.d}</span>` : ""}
+                <span class="item-rodape">
+                  <span class="item-preco">${reais(i.p)}</span>
+                  <span class="item-mais" aria-hidden="true">+</span>
+                </span>
+              </span>
             </button>`).join("")}
         </div>
       </div>`;
@@ -175,6 +178,9 @@ function abrirModal(id) {
   if (!it) return;
   itemAtual = it; qtdAtual = 1;
 
+  const mf = $("[data-modal-foto]");
+  mf.src = `assets/img/fotos/${it.f}.jpg`;
+  mf.alt = it.n;
   $("[data-modal-cat]").textContent = GRUPOS.find(g => g.id === it.g).titulo;
   $("[data-modal-nome]").textContent = it.n;
   const desc = $("[data-modal-desc]");
@@ -434,7 +440,10 @@ document.addEventListener("DOMContentLoaded", () => {
   form.fone.addEventListener("input", e => { e.target.value = formatarFone(e.target.value); });
   const campos = $("[data-campos-entrega]"), troco = $("[data-campo-troco]");
   $$('input[name="tipo"]', form).forEach(r => r.addEventListener("change", () => {
-    campos.hidden = form.tipo.value !== "Entrega";
+    const entrega = form.tipo.value === "Entrega";
+    campos.hidden = !entrega;
+    $("[data-caixa-retirada]").hidden = entrega;
+    $(".aviso-taxa").hidden = !entrega;
   }));
   form.pagamento.addEventListener("change", () => { troco.hidden = form.pagamento.value !== "Dinheiro"; });
 });

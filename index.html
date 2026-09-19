@@ -43,27 +43,27 @@
 <main id="inicio">
 
   <section class="capa">
-    <div class="capa-fundo" aria-hidden="true">
+    <div class="capa-foto" aria-hidden="true">
+      <img src="assets/img/fotos/capa.jpg" alt="" fetchpriority="high" width="1400" height="788" />
+      <span class="capa-veu"></span>
       <span class="brilho brilho-a"></span>
       <span class="brilho brilho-b"></span>
-      <img class="marca-dagua" src="assets/img/logo.png" alt="" />
     </div>
     <div class="capa-conteudo">
-      <img class="capa-logo" src="assets/img/logo.png" alt="Rei Burgão" width="150" height="150" />
+      <img class="capa-logo" src="assets/img/logo.png" alt="Rei Burgão" width="130" height="130" />
       <p class="chamada">Lanchonete em Suzano · Jd. Quaresmeira</p>
       <h1>O melhor lanche<br /><em>artesanal</em> da região.</h1>
-      <p class="sub">Hambúrguer artesanal de 150g, tradicional, hot dog, combo na caixa e porções. Você monta o pedido aqui e ele chega pronto no nosso WhatsApp.</p>
+      <p class="sub">Artesanal de 150g no pão brioche, tradicional, hot dog, combo na caixa e porções. Monte o pedido aqui — ele chega pronto no nosso WhatsApp.</p>
 
       <div class="selos">
-        <span class="selo nota"><b>5,0</b> <i aria-hidden="true">★★★★★</i> <small>6 avaliações no Google</small></span>
-        <span class="selo" data-status-selo>
-          <i class="ponto" aria-hidden="true"></i> <b data-status-texto>Verificando…</b>
-        </span>
+        <span class="selo nota"><b>5,0</b> <i aria-hidden="true">★★★★★</i> <small>no Google</small></span>
+        <span class="selo" data-status-selo><i class="ponto" aria-hidden="true"></i> <b data-status-texto>Verificando…</b></span>
+        <span class="selo"><b>Delivery</b> <small>e retirada</small></span>
       </div>
 
       <div class="capa-botoes">
-        <a class="botao primario" href="#cardapio">Ver cardápio</a>
-        <button class="botao contorno" type="button" data-abrir-carrinho>Meu pedido</button>
+        <a class="botao primario grande" href="#cardapio">Ver cardápio e pedir</a>
+        <a class="botao contorno" href="https://wa.me/5511976385099?text=Ol%C3%A1%21%20Vim%20pelo%20site%20e%20quero%20fazer%20um%20pedido." target="_blank" rel="noopener">Falar no WhatsApp</a>
       </div>
       <a class="insta" href="https://www.instagram.com/rei_burgao_/" target="_blank" rel="noopener">@rei_burgao_ no Instagram</a>
     </div>
@@ -196,9 +196,14 @@
         </label>
         <fieldset class="opcoes">
           <legend>Como você quer receber?</legend>
-          <label class="radio"><input type="radio" name="tipo" value="Entrega" checked /><span>Entrega</span></label>
-          <label class="radio"><input type="radio" name="tipo" value="Retirada no balcão" /><span>Retirada</span></label>
+          <label class="radio"><input type="radio" name="tipo" value="Entrega" checked /><span>🛵 Entrega</span></label>
+          <label class="radio"><input type="radio" name="tipo" value="Retirada no balcão" /><span>🏠 Retirada</span></label>
         </fieldset>
+        <div class="caixa-retirada" data-caixa-retirada hidden>
+          <b>Retirar no balcão</b>
+          <span>R. Eunice Cerqueira Innocencio, 245<br />Jd. Quaresmeira · Suzano — SP</span>
+          <a href="https://www.google.com/maps/search/?api=1&query=R.+Eunice+Cerqueira+Innocencio,+245+-+Jardim+Quaresmeira,+Suzano+-+SP" target="_blank" rel="noopener">Ver no mapa</a>
+        </div>
         <div data-campos-entrega>
           <label>Endereço
             <input name="endereco" type="text" placeholder="Rua, número e complemento" autocomplete="street-address" />
@@ -234,6 +239,7 @@
 <div class="modal" data-modal hidden role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
   <div class="modal-caixa">
     <button class="fechar" type="button" data-fechar-modal aria-label="Fechar">×</button>
+    <img class="modal-foto" data-modal-foto src="" alt="" width="560" height="420" />
     <p class="chamada" data-modal-cat></p>
     <h3 id="modal-titulo" data-modal-nome></h3>
     <p class="modal-desc" data-modal-desc></p>
