@@ -770,6 +770,7 @@ function enviarPedido(e) {
       endereco: tipo === "Entrega" ? enderecoCheio : "",
       pagamento: f.pagamento.value + (f.pagamento.value === "Dinheiro" && f.troco.value.trim() ? ` (troco para ${f.troco.value.trim()})` : ""),
       total: subtotal() + (taxa || 0),
+      taxa: taxa || 0,
       itens: carrinho.reduce((s, l) => s + l.q, 0)
     });
   }
