@@ -14,7 +14,7 @@ import {
   browserLocalPersistence, setPersistence
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import {
-  getFirestore, collection, query, where, orderBy, onSnapshot,
+  getFirestore, collection, query, where, orderBy, onSnapshot, getDocs,
   doc, updateDoc, Timestamp
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
@@ -32,13 +32,14 @@ const ETAPAS = {
   novo:       { rotulo: "Novo",        proxima: "preparando", acao: "Aceitar e preparar" },
   preparando: { rotulo: "Preparando",  proxima: "saiu",       acao: "Saiu para entrega" },
   saiu:       { rotulo: "A caminho",   proxima: "concluido",  acao: "Concluir" },
-  concluido:  { rotulo: "Concluído",   proxima: null,         acao: null },
-  recusado:   { rotulo: "Recusado",    proxima: null,         acao: null }
+  concluido:  { rotulo: "Concluído",   proxima: null,         acao: null, reabre: true },
+  recusado:   { rotulo: "Recusado",    proxima: null,         acao: null, reabre: true }
 };
 
-let pedidos = [];          // os de hoje, mais novos primeiro
+let pedidos = [];          // os do dia que está na tela, mais novos primeiro
 let primeiraCarga = true;  // não apita ao abrir a tela
-let filtro = "abertos";
+let filtro = "abertos";    // abertos | todos | historico
+let dataHistorico = null;  // "AAAA-MM-DD" quando olhando um dia passado
 
 /* ========================= alerta sonoro ========================= */
 /* Gerado na hora pelo navegador — sem arquivo de som para carregar. */
@@ -128,13 +129,46 @@ onAuthStateChanged(auth, usuario => {
 /* ========================= ouvir os pedidos ========================= */
 let pararDeEscutar = null;
 
-function inicioDeHoje() {
-  const d = new Date(); d.setHours(0, 0, 0, 0);
-  return Timestamp.fromDate(d);
+function faixaDoDia(iso) {
+  /* iso = "AAAA-MM-DD"; sem iso, é hoje */
+  const d = iso ? new Date(iso + "T00:00:00") : new Date();
+  d.setHours(0, 0, 0, 0);
+  const fim = new Date(d); fim.setDate(fim.getDate() + 1);
+  return { de: Timestamp.fromDate(d), ate: Timestamp.fromDate(fim) };
+}
+
+function inicioDeHoje() { return faixaDoDia().de; }
+
+/* histórico: busca um dia já passado, uma vez só */
+async function carregarHistorico(iso) {
+  const { de, ate } = faixaDoDia(iso);
+  el("[data-lista]").innerHTML = `<p class="vazio">Buscando os pedidos de ${formatarData(iso)}…</p>`;
+  try {
+    const r = await getDocs(query(
+      collection(db, "pedidos"),
+      where("criadoEm", ">=", de), where("criadoEm", "<", ate),
+      orderBy("criadoEm", "desc")
+    ));
+    pedidos = r.docs.map(d => ({ id: d.id, ...d.data() }));
+    numerarDoDia();
+    desenhar();
+  } catch (e) {
+    console.error(e);
+    el("[data-lista]").innerHTML = `<p class="vazio">Não consegui buscar esse dia. Verifique a internet e tente de novo.</p>`;
+  }
+}
+
+function formatarData(iso) {
+  if (!iso) return "hoje";
+  const [a, m, d] = iso.split("-");
+  return `${d}/${m}/${a}`;
 }
 
 function escutarPedidos() {
   if (pararDeEscutar) pararDeEscutar();
+  /* ao (re)abrir a escuta, a primeira leva não é "pedido novo" —
+     senão o painel apitaria para todos os pedidos já existentes do dia */
+  primeiraCarga = true;
   const consulta = query(
     collection(db, "pedidos"),
     where("criadoEm", ">=", inicioDeHoje()),
@@ -227,6 +261,7 @@ function cartao(p) {
       <button type="button" class="principal" data-imprimir="${esc(p.id)}">🖨️ Imprimir</button>
       ${etapa.proxima ? `<button type="button" data-avancar="${esc(p.id)}">${esc(etapa.acao)}</button>` : ""}
       ${p.status === "novo" ? `<button type="button" class="recusar" data-recusar="${esc(p.id)}">Recusar</button>` : ""}
+      ${etapa.reabre ? `<button type="button" class="reabrir" data-reabrir="${esc(p.id)}">↩︎ Reabrir pedido</button>` : ""}
     </div>
   </article>`;
 }
@@ -236,16 +271,38 @@ function desenhar() {
   const abertos = p => !["concluido", "recusado"].includes(p.status);
   const visiveis = filtro === "abertos" ? pedidos.filter(abertos) : pedidos;
 
-  el("[data-contador]").textContent = pedidos.filter(p => p.status === "novo").length || "";
+  el("[data-contador]").textContent =
+    filtro === "historico" ? "" : (pedidos.filter(p => p.status === "novo").length || "");
   els("[data-filtro]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filtro === filtro)));
+  el("[data-caixa-data]").hidden = filtro !== "historico";
+
+  resumoDoDia();
 
   if (!visiveis.length) {
-    lista.innerHTML = filtro === "abertos"
-      ? `<p class="vazio">Nenhum pedido em aberto. Quando chegar um novo, o computador vai apitar. 🔔</p>`
-      : `<p class="vazio">Nenhum pedido hoje ainda.</p>`;
+    lista.innerHTML =
+      filtro === "abertos"
+        ? `<p class="vazio">Nenhum pedido em aberto. Quando chegar um novo, o computador vai apitar. 🔔</p>`
+        : filtro === "historico"
+          ? `<p class="vazio">Nenhum pedido em ${formatarData(dataHistorico)}.</p>`
+          : `<p class="vazio">Nenhum pedido hoje ainda.</p>`;
     return;
   }
   lista.innerHTML = visiveis.map(cartao).join("");
+}
+
+/* faturamento e contagem do dia que está na tela */
+function resumoDoDia() {
+  const caixa = el("[data-resumo]");
+  const valem = pedidos.filter(p => p.status !== "recusado");
+  if (!pedidos.length) { caixa.hidden = true; return; }
+  const soma = valem.reduce((t, p) => t + (Number(p.total) || 0), 0);
+  const recusados = pedidos.length - valem.length;
+  caixa.hidden = false;
+  caixa.innerHTML = `
+    <span><b>${valem.length}</b> ${valem.length === 1 ? "pedido" : "pedidos"}</span>
+    <span><b>${reais(soma)}</b> em vendas</span>
+    ${recusados ? `<span class="rec">${recusados} recusado${recusados > 1 ? "s" : ""}</span>` : ""}
+    <span class="dia">${filtro === "historico" ? formatarData(dataHistorico) : "hoje"}</span>`;
 }
 
 /* atualiza os "há X min" sem recarregar nada */
@@ -272,9 +329,16 @@ el("[data-lista]").addEventListener("click", async e => {
   }
   if (br) {
     const p = achar(br.dataset.recusar);
-    if (p && confirm(`Recusar o pedido #${p.numero} de ${p.cliente || "cliente"}?`)) {
+    if (p && confirm(`Recusar o pedido #${p.numero} de ${p.cliente || "cliente"}?\n\nDá para voltar atrás depois, em "Todos de hoje".`)) {
       await mudarStatus(p.id, "recusado");
     }
+    return;
+  }
+
+  const bv = e.target.closest("[data-reabrir]");
+  if (bv) {
+    const p = achar(bv.dataset.reabrir);
+    if (p) await mudarStatus(p.id, "novo");   // volta para a fila como pedido novo
   }
 });
 
@@ -300,8 +364,34 @@ function imprimir(p) {
 
 /* ========================= controles de cima ========================= */
 els("[data-filtro]").forEach(b => b.addEventListener("click", () => {
-  filtro = b.dataset.filtro; desenhar();
+  filtro = b.dataset.filtro;
+  if (filtro === "historico") {
+    const campo = el("[data-data]");
+    if (!campo.value) campo.value = ontemISO();
+    dataHistorico = campo.value;
+    el("[data-caixa-data]").hidden = false;
+    carregarHistorico(dataHistorico);
+  } else {
+    dataHistorico = null;
+    escutarPedidos();   // volta para o dia de hoje, ao vivo
+  }
+  desenhar();
 }));
+
+function ontemISO() {
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+el("[data-data]").addEventListener("change", e => {
+  dataHistorico = e.target.value;
+  const hoje = new Date().toISOString().slice(0, 10);
+  if (!dataHistorico || dataHistorico === hoje) {
+    filtro = "todos"; dataHistorico = null; escutarPedidos(); desenhar();
+  } else {
+    carregarHistorico(dataHistorico);
+  }
+});
 
 const botaoSom = el("[data-som]");
 function pintarSom() {
