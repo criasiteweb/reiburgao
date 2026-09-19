@@ -376,6 +376,21 @@ function enviarPedido(e) {
     ? msg + "\n🖨️ Comanda: " + location.href.replace(/[^/]*$/, "") + "comanda.html#p=" + paraLink(msg)
     : msg;
 
+  /* manda uma cópia para o painel da loja (painel.html), que apita
+     no balcão e imprime. Se falhar, o WhatsApp abaixo segue normal. */
+  if (window.enviarParaPainel) {
+    window.enviarParaPainel({
+      texto: msg,
+      cliente: f.nome.value.trim(),
+      fone: formatarFone(f.fone.value),
+      tipo,
+      endereco: tipo === "Entrega" ? `${f.endereco.value.trim()} — ${f.bairro.value.trim()}` : "",
+      pagamento: f.pagamento.value + (f.pagamento.value === "Dinheiro" && f.troco.value.trim() ? ` (troco para ${f.troco.value.trim()})` : ""),
+      total: subtotal(),
+      itens: carrinho.reduce((s, l) => s + l.q, 0)
+    });
+  }
+
   st.dataset.erro = "false";
   st.textContent = "Abrindo o WhatsApp com seu pedido…";
   window.open(`https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
