@@ -158,39 +158,86 @@ function numeroComanda(novo) {
   return String(s.n || 1).padStart(3, "0");
 }
 
+
+/* ---- troco: "Dinheiro (troco para R$ 100)" -> quanto levar de volta ---- */
+function trocoDe(pagamento, total) {
+  const m = String(pagamento || "").match(/troco\s*para\s*R?\$?\s*([\d.,]+)/i);
+  if (!m) return null;
+  const valor = paraNumero(m[1]);
+  if (!(valor > total)) return null;
+  return { levou: valor, volta: valor - total };
+}
+
+/* ---- título de seção na largura do papel: "--- CLIENTE ----------" ---- */
+function secao(titulo) {
+  const t = ` ${titulo} `;
+  const sobra = Math.max(0, COLS - t.length - 3);
+  return "-".repeat(3) + t + "-".repeat(sobra);
+}
+
 /* ---- versão em texto puro (é o que vai para a impressora via RawBT) ---- */
 function comandaTexto(p, num, semAcentos) {
   const L = [];
-  const barra = "=".repeat(COLS);
-  const tracos = "-".repeat(COLS);
-  const taxa = taxaAtual();
+  const barra  = "=".repeat(COLS);
+  const taxa   = taxaAtual();
+  const entrega = /entrega/i.test(p.tipo || "");
+  const total  = p.subtotal + (entrega ? taxa : 0);
+  const troco  = trocoDe(p.pagamento, total);
 
-  L.push(barra, centro(LOJA.nome), centro(LOJA.endereco), centro(LOJA.bairro), centro(LOJA.fone), barra);
+  /* cabeçalho da loja */
+  L.push(barra, centro(LOJA.nome.toUpperCase()), centro(LOJA.endereco),
+         centro(LOJA.bairro), centro(LOJA.fone), barra);
   L.push(linhaLR(`COMANDA ${num}`, agora()));
-  L.push(tracos);
+  L.push(barra, "");
 
+  /* o dado mais importante para o balcão, em destaque */
+  L.push(centro(entrega ? ">>> ENTREGA <<<" : ">>> RETIRADA <<<"), "");
+
+  /* quem é o cliente */
+  L.push(secao("CLIENTE"));
+  const campo = (rot, val) => {
+    if (!val) return;
+    const recuo = " ".repeat(10);
+    /* quebra já contando o espaço do rótulo, para nada passar de COLS */
+    quebra(String(val), recuo).forEach((l, k) =>
+      L.push(k === 0 ? rot.padEnd(10) + l.slice(10) : l));
+  };
+  campo("NOME:", p.cliente);
+  campo("FONE:", p.fone);
+  if (entrega) campo("ENDERECO:", p.endereco);
+  L.push("");
+
+  /* o que preparar */
+  L.push(secao("PEDIDO"));
   p.itens.forEach(i => {
     L.push(linhaLR(`${i.q}x ${i.nome.toUpperCase()}`, reais(i.total)));
     if (i.lanches) quebra(i.lanches, "   > ").forEach(l => L.push(l));
     if (i.adds)    quebra("+ " + i.adds, "   ").forEach(l => L.push(l));
     if (i.obs)     quebra("OBS: " + i.obs, "   ").forEach(l => L.push(l));
   });
+  if (p.obs) { L.push(""); quebra("OBS DO PEDIDO: " + p.obs, "").forEach(l => L.push(l)); }
+  L.push("");
 
-  L.push(tracos);
+  /* quanto dá */
+  L.push(secao("VALORES"));
   L.push(linhaLR("SUBTOTAL", reais(p.subtotal)));
-  if (p.tipo && /entrega/i.test(p.tipo)) L.push(linhaLR("TAXA DE ENTREGA", taxa ? reais(taxa) : "a combinar"));
-  L.push(linhaLR("TOTAL", reais(p.subtotal + taxa)));
-  L.push(barra);
+  if (entrega) L.push(linhaLR("TAXA DE ENTREGA", taxa ? reais(taxa) : "A COMBINAR"));
+  L.push(linhaLR("TOTAL A PAGAR", reais(total)));
+  L.push("");
 
-  const campo = (rot, val) => { if (val) quebra(val, "").forEach((l, k) => L.push(k === 0 ? `${rot.padEnd(9)}${l}` : " ".repeat(9) + l)); };
-  campo("CLIENTE", p.cliente);
-  campo("FONE", p.fone);
-  campo("RECEBER", (p.tipo || "").toUpperCase());
-  campo("ENDERECO", p.endereco);
-  campo("PAGTO", p.pagamento);
-  campo("OBS", p.obs);
+  /* como recebe */
+  L.push(secao("PAGAMENTO"));
+  campo("FORMA:", p.pagamento || "A combinar");
+  if (troco) {
+    campo("RECEBE:", reais(troco.levou));
+    campo("TROCO:", reais(troco.volta));
+  }
+  L.push("");
+
   L.push(barra);
   L.push(centro("Pedido feito pelo site"));
+  L.push(centro(LOJA.fone));
+  L.push(barra);
 
   const txt = L.join("\n");
   return semAcentos ? semAcento(txt) : txt;
@@ -199,8 +246,13 @@ function comandaTexto(p, num, semAcentos) {
 /* ---- versão bonita em HTML (é o que sai no botão "Imprimir comanda") ---- */
 function comandaHTML(p, num) {
   const taxa = taxaAtual();
-  const linha = (a, b, cls = "") => `<div class="lin ${cls}"><span>${a}</span><b>${b}</b></div>`;
+  const entrega = /entrega/i.test(p.tipo || "");
+  const total = p.subtotal + (entrega ? taxa : 0);
+  const troco = trocoDe(p.pagamento, total);
   const esc = s => String(s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+  const linha = (a, b, cls = "") => `<div class="lin ${cls}"><span>${a}</span><b>${b}</b></div>`;
+  const bloco = t => `<div class="secao">${t}</div>`;
+  const dado  = (rot, val) => val ? `<div class="dado"><i>${rot}</i><span>${esc(val)}</span></div>` : "";
 
   const itens = p.itens.map(i => `
     <div class="item">
@@ -210,8 +262,6 @@ function comandaHTML(p, num) {
       ${i.obs ? `<div class="sub obs">OBS: ${esc(i.obs)}</div>` : ""}
     </div>`).join("");
 
-  const dado = (rot, val) => val ? `<div class="dado"><i>${rot}</i><span>${esc(val)}</span></div>` : "";
-
   return `
     <div class="cab">
       <strong>${LOJA.nome}</strong>
@@ -220,20 +270,29 @@ function comandaHTML(p, num) {
       <span>${LOJA.fone}</span>
     </div>
     <div class="lin num"><span>COMANDA ${num}</span><b>${agora()}</b></div>
-    <hr />
-    ${itens}
-    <hr />
-    ${linha("Subtotal", reais(p.subtotal))}
-    ${p.tipo && /entrega/i.test(p.tipo) ? linha("Taxa de entrega", taxa ? reais(taxa) : "a combinar") : ""}
-    ${linha("TOTAL", reais(p.subtotal + taxa), "total")}
-    <hr />
-    ${dado("Cliente", p.cliente)}
+
+    <div class="tarja ${entrega ? "t-entrega" : "t-retirada"}">${entrega ? "ENTREGA" : "RETIRADA"}</div>
+
+    ${bloco("Cliente")}
+    ${dado("Nome", p.cliente)}
     ${dado("Fone", p.fone)}
-    ${dado("Receber", (p.tipo || "").toUpperCase())}
-    ${dado("Endereço", p.endereco)}
-    ${dado("Pagamento", p.pagamento)}
-    ${dado("Observações", p.obs)}
-    <div class="rodape">Pedido feito pelo site</div>`;
+    ${entrega ? dado("Endereço", p.endereco) : ""}
+
+    ${bloco("Pedido")}
+    ${itens}
+    ${p.obs ? `<div class="sub obs">OBS DO PEDIDO: ${esc(p.obs)}</div>` : ""}
+
+    ${bloco("Valores")}
+    ${linha("Subtotal", reais(p.subtotal))}
+    ${entrega ? linha("Taxa de entrega", taxa ? reais(taxa) : "a combinar") : ""}
+    ${linha("TOTAL A PAGAR", reais(total), "total")}
+
+    ${bloco("Pagamento")}
+    ${dado("Forma", p.pagamento || "A combinar")}
+    ${troco ? dado("Recebe", reais(troco.levou)) : ""}
+    ${troco ? `<div class="dado troco"><i>Troco</i><span>${reais(troco.volta)}</span></div>` : ""}
+
+    <div class="rodape">Pedido feito pelo site<br />${LOJA.fone}</div>`;
 }
 
 /* ========================= impressão ========================= */
