@@ -58,7 +58,23 @@ const LOJA = {
       }
     },
 
-    /* quando o cliente diz que o bairro dele não está na lista */
+    /* =====================================================
+       TAXA AUTOMÁTICA POR DISTÂNCIA
+       Serve para QUALQUER endereço, mesmo bairro fora da lista.
+       O site descobre onde fica o endereço e calcula a taxa.
+       A tabela de bairros acima, quando tem valor, manda —
+       é ela que vale para os bairros de sempre.
+       ===================================================== */
+    porDistancia: {
+      ativa: true,
+      base: 3,        // cobra isto até o "ateKm"
+      ateKm: 2,
+      porKm: 1,       // some isto a cada km depois disso
+      maxKm: 10,      // [CONFIRMAR] fora deste raio, não entrega
+      fator: 1.3      // linha reta -> rua de verdade (ruas dão voltas)
+    },
+
+    /* quando não dá para descobrir a distância */
     foraDaLista: null
   },
 
@@ -384,6 +400,74 @@ const SEM_LISTA = "__outro__";
 
 
 
+
+/* =========================================================
+   Taxa automática por distância
+   Descobre onde fica o endereço do cliente (OpenStreetMap,
+   grátis e sem cadastro) e calcula a taxa pelo km rodado.
+   Assim qualquer bairro é atendido, não só os da lista.
+   ========================================================= */
+const LOJA_COORD = { lat: -23.547023, lon: -46.334472 };   // R. Eunice Cerqueira Innocencio, 245
+let distanciaKm = null;       // última distância calculada
+let buscaDistancia = null;
+
+function kmEntre(a, b) {
+  const R = 6371, rad = g => g * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLon = rad(b.lon - a.lon);
+  const x = Math.sin(dLat / 2) ** 2 +
+            Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+function taxaPorKm(km) {
+  const c = LOJA.entrega.porDistancia;
+  if (!c || !c.ativa || km == null) return null;
+  if (km > c.maxKm) return "fora";
+  const v = c.base + Math.max(0, km - c.ateKm) * c.porKm;
+  return Math.round(v * 2) / 2;            // arredonda para R$ 0,50
+}
+
+function pedirDistancia() {
+  clearTimeout(buscaDistancia);
+  buscaDistancia = setTimeout(calcularDistancia, 900);
+}
+
+async function calcularDistancia() {
+  if (tipoEscolhido() !== "Entrega") return;
+  const rua = document.querySelector("[name=endereco]").value.trim();
+  const num = document.querySelector("[name=numero]").value.trim();
+  const bairro = bairroEscolhido();
+  const cidade = $("[data-cidade]").value;
+  if (rua.length < 4 || !cidade) return;
+
+  /* Tenta do mais específico para o mais genérico. O bairro fica FORA da
+     busca: o nome que os Correios usam muitas vezes não é o mesmo do mapa,
+     e quando não bate o mapa não devolve nada. */
+  const tentativas = [
+    `${rua}${num ? ", " + num : ""}, ${cidade}, SP, Brasil`,
+    `${rua}, ${cidade}, SP, Brasil`,
+    bairro ? `${bairro}, ${cidade}, SP, Brasil` : null
+  ].filter(Boolean);
+
+  for (const busca of tentativas) {
+    try {
+      const r = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" +
+                            encodeURIComponent(busca));
+      const lista = await r.json();
+      if (Array.isArray(lista) && lista.length) {
+        const reta = kmEntre(LOJA_COORD, { lat: +lista[0].lat, lon: +lista[0].lon });
+        distanciaKm = reta * (LOJA.entrega.porDistancia.fator || 1);
+        atualizarTaxa();
+        return;
+      }
+    } catch (e) {
+      distanciaKm = null; atualizarTaxa(); return;   // sem internet: cai na tabela
+    }
+  }
+  distanciaKm = null;          // nem o bairro o mapa conhece
+  atualizarTaxa();
+}
+
 /* ---- CEP preenche endereço sozinho (ViaCEP) ---- */
 function formatarCep(v) {
   const d = soDigitos(v).slice(0, 8);
@@ -426,6 +510,7 @@ async function buscarCep() {
     if (e.bairro) aplicarBairro(e.bairro);
 
     avisoCep(`${e.logradouro || "Endereço"} — ${e.bairro || ""}, ${e.localidade}`.replace(" — ,", " —"), true);
+    pedirDistancia();          // já calcula a taxa com o endereço que veio do CEP
     if (e.logradouro) document.querySelector("[name=numero]").focus();
   } catch (err) {
     avisoCep("", false);   // sem internet: o cliente preenche na mão
@@ -514,6 +599,7 @@ function montarEntrega() {
   });
   selBairro.addEventListener("change", () => {
     $("[data-campo-outro]").hidden = selBairro.value !== SEM_LISTA;
+    pedirDistancia();
     atualizarTaxa();
   });
   atualizarTaxa();
@@ -529,15 +615,23 @@ function preencherBairros() {
 }
 
 /* devolve o valor da taxa, ou null quando é "a combinar" */
+/* Devolve o valor da taxa, "fora" quando passa do raio, ou null
+   quando ainda não dá para saber ("a combinar").
+   Ordem: a tabela de bairros manda; sem ela, vale a distância. */
 function taxaEntrega() {
   if (!LOJA.entrega || !LOJA.entrega.ativa) return null;
   if (tipoEscolhido() !== "Entrega") return 0;
-  const bairro = $("[data-bairro]") ? $("[data-bairro]").value : "";
-  if (!bairro) return null;
-  if (bairro === SEM_LISTA) return LOJA.entrega.foraDaLista;
-  const cidade = $("[data-cidade]").value;
-  const v = (LOJA.entrega.cidades[cidade] || {})[bairro];
-  return (typeof v === "number") ? v : null;
+
+  const sel = $("[data-bairro]");
+  const bairro = sel ? sel.value : "";
+  if (bairro && bairro !== SEM_LISTA) {
+    const cidade = $("[data-cidade]").value;
+    const v = (LOJA.entrega.cidades[cidade] || {})[bairro];
+    if (typeof v === "number") return v;      // preço combinado com o dono
+  }
+  const porKm = taxaPorKm(distanciaKm);       // qualquer outro endereço
+  if (porKm !== null) return porKm;
+  return LOJA.entrega.foraDaLista;
 }
 
 function bairroEscolhido() {
@@ -570,14 +664,27 @@ function atualizarTaxa() {
 
   if (!entrega) { atualizarTotais(); return; }
 
-  $("[data-taxa-valor]").textContent = taxa === null ? "a combinar" : reais(taxa);
-  $("[data-total-geral]").textContent = reais(subtotal() + (taxa || 0));
+  const foraDoRaio = taxa === "fora";
+  const valor = (typeof taxa === "number") ? taxa : null;
+
+  $("[data-taxa-valor]").textContent =
+    foraDoRaio ? "fora da área" : valor === null ? "a combinar" : reais(valor);
+  $("[data-total-geral]").textContent = reais(subtotal() + (valor || 0));
+  if (pendente) pendente.hidden = !(entrega && valor === null && !foraDoRaio);
 
   if (aviso) {
-    const fora = $("[data-bairro]") && $("[data-bairro]").value === SEM_LISTA;
-    aviso.hidden = !fora;
-    if (fora) aviso.textContent =
-      `A loja entrega num raio de cerca de ${LOJA.entrega.raioKm} km. Confirmamos a taxa pelo WhatsApp antes de preparar.`;
+    if (foraDoRaio) {
+      aviso.hidden = false;
+      aviso.textContent = `Esse endereço fica a cerca de ${distanciaKm.toFixed(1)} km da loja, ` +
+        `acima do raio de ${LOJA.entrega.porDistancia.maxKm} km que atendemos. ` +
+        `Mande o pedido assim mesmo se quiser — a loja confirma pelo WhatsApp.`;
+    } else if (valor !== null && distanciaKm !== null &&
+               !(LOJA.entrega.cidades[$("[data-cidade]").value] || {})[$("[data-bairro]").value]) {
+      aviso.hidden = false;
+      aviso.textContent = `Taxa calculada pela distância: cerca de ${distanciaKm.toFixed(1)} km até a loja.`;
+    } else {
+      aviso.hidden = true;
+    }
   }
   atualizarTotais();
 }
@@ -585,7 +692,8 @@ function atualizarTaxa() {
 /* o rodapé do carrinho também precisa refletir a taxa */
 function atualizarTotais() {
   const entrega = tipoEscolhido() === "Entrega";
-  const taxa = entrega ? (taxaEntrega() || 0) : 0;
+  const t = entrega ? taxaEntrega() : 0;
+  const taxa = (typeof t === "number") ? t : 0;
   const flut = $("[data-total-flutuante]");
   if (flut) flut.textContent = reais(subtotal() + taxa);
 }
@@ -620,7 +728,8 @@ function enviarPedido(e) {
     return partes.join("\n");
   });
 
-  const taxa = tipo === "Entrega" ? taxaEntrega() : 0;
+  const taxaBruta = tipo === "Entrega" ? taxaEntrega() : 0;
+  const taxa = (typeof taxaBruta === "number") ? taxaBruta : null;
   const enderecoCheio = [
     `${f.endereco.value.trim()}, ${f.numero.value.trim()}`,
     f.complemento.value.trim(),
@@ -779,7 +888,8 @@ document.addEventListener("DOMContentLoaded", () => {
     atualizarTaxa();
   }));
   document.querySelector("[name=bairroOutro]").addEventListener("input", atualizarTaxa);
-  document.querySelector("[name=endereco]").addEventListener("input", pedirBairro);
+  document.querySelector("[name=endereco]").addEventListener("input", () => { pedirBairro(); pedirDistancia(); });
+  document.querySelector("[name=numero]").addEventListener("input", pedirDistancia);
   const campoCep = document.querySelector("[name=cep]");
   campoCep.addEventListener("input", e => {
     e.target.value = formatarCep(e.target.value);
