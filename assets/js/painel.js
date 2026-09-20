@@ -291,10 +291,19 @@ function cartao(p) {
 
 function desenhar() {
   const lista = el("[data-lista]");
-  const noCaixa = filtro === "caixa";
-  el("[data-caixa]").hidden = !noCaixa;
-  lista.hidden = noCaixa;
-  el("[data-resumo]").hidden = noCaixa || !pedidos.length;
+  const noCaixa  = filtro === "caixa";
+  const noBalcao = filtro === "balcao";
+  el("[data-caixa]").hidden  = !noCaixa;
+  el("[data-balcao]").hidden = !noBalcao;
+  document.body.classList.toggle("ver-papel", noBalcao);
+  lista.hidden = noCaixa || noBalcao;
+  el("[data-resumo]").hidden = noCaixa || noBalcao || !pedidos.length;
+
+  if (noBalcao) {
+    els("[data-filtro]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filtro === filtro)));
+    el("[data-caixa-data]").hidden = true;
+    return;
+  }
   if (noCaixa) {
     els("[data-filtro]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filtro === filtro)));
     el("[data-caixa-data]").hidden = false;
@@ -636,6 +645,7 @@ function imprimir(p) {
 /* ========================= controles de cima ========================= */
 els("[data-filtro]").forEach(b => b.addEventListener("click", () => {
   filtro = b.dataset.filtro;
+  if (filtro === "balcao") { desenhar(); return; }
   if (filtro === "caixa") {
     const campo = el("[data-data]");
     if (!campo.value) campo.value = hojeISO();
