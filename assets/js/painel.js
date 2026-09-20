@@ -29,7 +29,7 @@ const el = (s, r = document) => r.querySelector(s);
 const els = (s, r = document) => [...r.querySelectorAll(s)];
 
 const ETAPAS = {
-  novo:       { rotulo: "Novo",        proxima: "preparando", acao: "Aceitar e preparar" },
+  novo:       { rotulo: "Novo",        proxima: "preparando", acao: "✅ Aceitar e imprimir" },
   preparando: { rotulo: "Preparando",  proxima: "saiu",       acao: "Saiu para entrega" },
   saiu:       { rotulo: "A caminho",   proxima: "concluido",  acao: "Concluir" },
   concluido:  { rotulo: "Concluído",   proxima: null,         acao: null, reabre: true },
@@ -63,6 +63,25 @@ function apitar(vezes = 3) {
       osc.start(t0); osc.stop(t0 + 0.32);
     }
   } catch (e) { /* navegador sem áudio: o aviso visual continua valendo */ }
+}
+
+/* O alerta volta a tocar enquanto houver pedido novo sem ninguém mexer.
+   Para no instante em que a loja aceita, imprime ou recusa. */
+let insistir = null;
+
+function comecarInsistencia() {
+  if (insistir) return;
+  insistir = setInterval(() => {
+    const temNovo = pedidos.some(p => p.status === "novo");
+    if (!temNovo) { pararInsistencia(); return; }
+    apitar(2);
+    document.title = "🔔 PEDIDO ESPERANDO — Rei Burgão";
+  }, 20000);
+}
+
+function pararInsistencia() {
+  clearInterval(insistir); insistir = null;
+  document.title = "Painel de Pedidos | Rei Burgão";
 }
 
 function avisarNaTela(p) {
@@ -185,6 +204,8 @@ function escutarPedidos() {
     desenhar();
     if (filtro === "caixa") desenharCaixa();
     if (novos.length) { apitar(); novos.forEach(avisarNaTela); }
+    if (pedidos.some(p => p.status === "novo")) comecarInsistencia();
+    else pararInsistencia();
     primeiraCarga = false;
   }, erro => {
     marcarConexao(false);
@@ -538,7 +559,11 @@ el("[data-lista]").addEventListener("click", async e => {
   if (ba) {
     const p = achar(ba.dataset.avancar);
     const prox = p && (ETAPAS[p.status] || ETAPAS.novo).proxima;
-    if (prox) await mudarStatus(p.id, prox);
+    if (!prox) return;
+    /* aceitar um pedido novo já manda a comanda para a impressora:
+       é o gesto que o balcão faz de qualquer jeito, em um clique só */
+    if (p.status === "novo") { imprimir(p); return; }
+    await mudarStatus(p.id, prox);
     return;
   }
   if (br) {
@@ -605,7 +630,7 @@ function imprimir(p) {
     : `<div class="cru">${esc(p.texto || "")}</div>`;
   window.print();
   updateDoc(doc(db, "pedidos", p.id), { impresso: true }).catch(() => {});
-  if (p.status === "novo") mudarStatus(p.id, "preparando");
+  if (p.status === "novo") { mudarStatus(p.id, "preparando"); pararInsistencia(); }
 }
 
 /* ========================= controles de cima ========================= */
