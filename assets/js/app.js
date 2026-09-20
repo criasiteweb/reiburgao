@@ -8,11 +8,9 @@
 
 const LOJA = {
   nome: "Rei Burgão",
-  /* ⚠️ MODO TESTE — este é o WhatsApp do Matheus (Criasiteweb), para os
-     pedidos de teste NÃO caírem no celular do dono da lanchonete.
-     ANTES DE ENTREGAR, trocar de volta para: "5511976385099"  */
-  whatsapp: "5511988097416",   // TESTE — número real da loja: 5511976385099
-  endereco: "R. Eunice Cerqueira Innocencio, 245 — Jd. Quaresmeira, Suzano/SP",
+  /* WhatsApp real da Lanchonete Rei Burgão — os pedidos caem no celular da loja. */
+  whatsapp: "5511976385099",
+  endereco: "R. Eunice Cerqueira Innocencio, 245 - Jardim Quaresmeira, Suzano - SP, 08671-330",
   preparo: "40 a 60 min",              // [CONFIRMAR com o dono] tempo médio de entrega
   abre: 18,                            // hora de abertura (Google)
   fecha: 23,                           // [CONFIRMAR] horário de fechamento
@@ -318,7 +316,7 @@ const SEM_LISTA = "__outro__";
    grátis e sem cadastro) e calcula a taxa pelo km rodado.
    Assim qualquer bairro é atendido, não só os da lista.
    ========================================================= */
-const LOJA_COORD = { lat: -23.547023, lon: -46.334472 };   // R. Eunice Cerqueira Innocencio, 245
+const LOJA_COORD = { lat: -23.547038, lon: -46.333554 };   // R. Eunice Cerqueira Innocencio, 245
 let distanciaKm = null;       // última distância calculada
 let buscaDistancia = null;
 
@@ -662,11 +660,7 @@ function enviarPedido(e) {
   if (soDigitos(f.fone.value).length < 10) return erro(f.fone, "Confira o número do WhatsApp com DDD.");
 
   const modo = f.tipo.value;
-  if (modo === "Mesa" && !f.mesa.value.trim()) {
-    return erro(f.mesa, "Diga o número da mesa para levarmos seu pedido.");
-  }
-  /* na mesa, o pedido vai identificado pelo número */
-  const tipo = modo === "Mesa" ? `Mesa ${f.mesa.value.trim()}` : modo;
+  const tipo = modo;
   if (tipo === "Entrega") {
     if (!f.endereco.value.trim()) return erro(f.endereco, "Diga o nome da rua para entregarmos.");
     if (!f.numero.value.trim())   return erro(f.numero, "Falta o número da casa ou do prédio.");
@@ -833,9 +827,9 @@ document.addEventListener("DOMContentLoaded", () => {
   form.fone.addEventListener("input", e => { e.target.value = formatarFone(e.target.value); });
   const campos = $("[data-campos-entrega]"), troco = $("[data-campo-troco]");
   $$('input[name="tipo"]', form).forEach(r => r.addEventListener("change", () => {
-    const modo = form.tipo.value;                    // Entrega | Retirada no balcão | Mesa
+    const modo = form.tipo.value;                    // Entrega | Retirada no balcão | No restaurante
     const entrega = modo === "Entrega";
-    const mesa = modo === "Mesa";
+    const mesa = modo === "No restaurante";
     campos.hidden = !entrega;
     $("[data-caixa-retirada]").hidden = entrega || mesa;
     $("[data-caixa-mesa]").hidden = !mesa;
@@ -843,9 +837,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const opcCartao = [...form.pagamento.options].find(o => o.value.startsWith("Cartão"));
     if (opcCartao) {
       opcCartao.value = opcCartao.textContent =
-        entrega ? "Cartão na entrega" : mesa ? "Cartão na mesa" : "Cartão";
+        entrega ? "Cartão na entrega" : "Cartão";
     }
-    if (mesa) form.mesa.focus();
     atualizarTaxa();
   }));
   document.querySelector("[name=bairroOutro]").addEventListener("input", atualizarTaxa);

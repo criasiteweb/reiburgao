@@ -4,7 +4,7 @@
 
    Para o pedido que não vem do site: o dono monta clicando
    nos itens do cardápio. Dá para deixar VÁRIAS comandas
-   abertas ao mesmo tempo (mesa 1, mesa 2, telefone…), e cada
+   abertas ao mesmo tempo (balcão, telefone, entrega…), e cada
    uma guarda cliente, forma de pagamento, taxa e troco.
 
    Tudo fica salvo no próprio aparelho: se a aba fechar ou a
@@ -50,7 +50,7 @@ function novaComanda(redesenhar = true) {
     id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
     num: numeroComanda(true),
     pedido: pedidoVazio(),
-    mesa: "", forma: "", recebido: "",
+    forma: "", recebido: "",
     criada: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
   });
   atual = comandas.length - 1;
@@ -63,7 +63,6 @@ const comanda = () => comandas[atual];
 /* ========================= abas ========================= */
 function tituloAba(c) {
   const p = c.pedido;
-  if (c.mesa) return "Mesa " + c.mesa;
   if (p.cliente) return p.cliente.split(/\s+/)[0];
   const q = p.itens.reduce((s, i) => s + i.q, 0);
   return q ? q + (q === 1 ? " item" : " itens") : "Comanda " + c.num;
@@ -195,7 +194,6 @@ function desenharTotais() {
 function paraImpressao() {
   const c = comanda();
   const p = JSON.parse(JSON.stringify(c.pedido));
-  if (c.mesa && /mesa/i.test(p.tipo)) p.tipo = "Mesa " + c.mesa;
   p.pagamento = c.forma || "";
   const recebido = paraNumero(c.recebido || "0");
   if (/dinheiro/i.test(c.forma) && recebido) p.pagamento = `Dinheiro (troco para ${reais(recebido)})`;
@@ -215,22 +213,20 @@ function desenharPapel() {
 function pintarCampos() {
   const c = comanda(), p = c.pedido;
   const entrega = /entrega/i.test(p.tipo || "");
-  const naMesa = /mesa/i.test(p.tipo || "");
+  const noLocal = /restaurante|mesa/i.test(p.tipo || "");
 
   $("[data-cliente]").value = p.cliente || "";
   $("[data-fone]").value = p.fone || "";
   $("[data-endereco]").value = p.endereco || "";
   $("[data-obs]").value = p.obs || "";
-  $("[data-mesa]").value = c.mesa || "";
   $("[data-recebido]").value = c.recebido || "";
 
-  $("[data-campo-mesa]").hidden = !naMesa;
   $("[data-campo-endereco]").hidden = !entrega;
   $("[data-campo-taxa]").hidden = !entrega;
   $("[data-campo-troco]").hidden = !/dinheiro/i.test(c.forma || "");
 
   $$("[data-tipos] button").forEach(b =>
-    b.classList.toggle("ativo", b.dataset.tipo === (naMesa ? "Mesa" : p.tipo)));
+    b.classList.toggle("ativo", b.dataset.tipo === p.tipo));
   $$("[data-pagto] button").forEach(b =>
     b.classList.toggle("ativo", b.dataset.forma === c.forma));
 }
@@ -261,12 +257,11 @@ function comoVenda(c) {
     hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
     cliente: p.cliente || "",
     fone: p.fone || "",
-    tipo: c.mesa && /mesa/i.test(p.tipo) ? "Mesa " + c.mesa : p.tipo,
+    tipo: p.tipo,
     endereco: p.endereco || "",
     pagamento: paraImpressao().pagamento || "",
     forma: c.forma || "",
     recebido: c.recebido || "",
-    mesa: c.mesa || "",
     obs: p.obs || "",
     itens: p.itens.map(i => ({ ref: i.ref || "", q: i.q, nome: i.nome, unit: i.unit, total: i.total, obs: i.obs || "" })),
     subtotal: p.subtotal,
@@ -341,10 +336,10 @@ async function editarComanda(id) {
       subtotal: v.subtotal || 0,
       taxa: v.taxa || null,
       cliente: v.cliente || "", fone: v.fone || "",
-      tipo: /^mesa/i.test(v.tipo || "") ? "Mesa" : (v.tipo || "Retirada no balcão"),
+      tipo: v.tipo || "Retirada no balcão",
       endereco: v.endereco || "", pagamento: "", obs: v.obs || ""
     },
-    mesa: v.mesa || "", forma: v.forma || "", recebido: v.recebido || "",
+    forma: v.forma || "", recebido: v.recebido || "",
     criada: v.hora || ""
   });
   atual = comandas.length - 1;
@@ -419,7 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tipo = e.target.closest("[data-tipo]");
     if (tipo) {
       const v = tipo.dataset.tipo;
-      comanda().pedido.tipo = v === "Mesa" ? "Mesa" : v;
+      comanda().pedido.tipo = v;
       salvar(); desenharComanda(); return;
     }
 
@@ -493,7 +488,6 @@ document.addEventListener("DOMContentLoaded", () => {
   liga("[data-fone]",     v => comanda().pedido.fone = v);
   liga("[data-endereco]", v => comanda().pedido.endereco = v);
   liga("[data-obs]",      v => comanda().pedido.obs = v);
-  liga("[data-mesa]",     v => { comanda().mesa = v; });
   liga("[data-recebido]", v => comanda().recebido = v);
 
   const cx = $("[data-busca]");
