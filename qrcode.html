@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>QR Code para imprimir | Rei Burgão</title>
+<link rel="icon" href="assets/img/favicon.png" type="image/png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#0E0E10;color:#EDEAE2;font-family:"Inter",system-ui,sans-serif;padding:28px 18px 60px}
+  .folha{
+    max-width:520px;margin:0 auto;background:#FFC20E;color:#1a1200;
+    border-radius:26px;padding:34px 28px 30px;text-align:center;
+  }
+  .folha img.logo{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;display:block}
+  h1{font-family:"Anton",Impact,sans-serif;font-weight:400;font-size:34px;margin:0 0 4px;letter-spacing:.02em;text-transform:uppercase}
+  .sub{margin:0 0 22px;font-size:16px;font-weight:600}
+  .qr{background:#fff;border-radius:18px;padding:16px;display:inline-block}
+  .qr img{width:250px;height:250px;display:block;image-rendering:pixelated}
+  .passos{margin:22px 0 0;font-size:15px;line-height:1.6;font-weight:600}
+  .end{margin:18px 0 0;font-size:13.5px;line-height:1.5;opacity:.75}
+  .fora{max-width:520px;margin:22px auto 0;text-align:center;color:rgba(237,234,226,.7);font-size:14px;line-height:1.6}
+  .fora button{
+    margin-top:12px;padding:13px 22px;border-radius:12px;border:0;cursor:pointer;
+    background:#FFC20E;color:#1a1200;font:800 15px/1 "Inter",sans-serif;
+  }
+  @media print{
+    body{background:#fff;padding:0}
+    .fora{display:none}
+    .folha{max-width:100%;border-radius:0;box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<div class="folha">
+  <img class="logo" src="assets/img/logo.png" alt="Rei Burgão" />
+  <h1>Peça pelo celular</h1>
+  <p class="sub">Aponte a câmera para o código</p>
+
+  <div class="qr"><img src="assets/img/qrcode.png" alt="QR Code do cardápio do Rei Burgão" /></div>
+
+  <p class="passos">
+    Cardápio completo com fotos<br />
+    Monta o pedido e manda no WhatsApp
+  </p>
+
+  <p class="end">
+    R. Eunice Cerqueira Innocencio, 245 — Jd. Quaresmeira, Suzano/SP<br />
+    (11) 97638-5099 · @rei_burgao_
+  </p>
+</div>
+
+<div class="fora">
+  <p>Imprima e cole no balcão, na vitrine ou na embalagem.<br />Funciona em papel A4 comum.</p>
+  <button type="button" onclick="window.print()">🖨️ Imprimir este cartaz</button>
+</div>
+
+</body>
+</html>
