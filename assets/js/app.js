@@ -100,9 +100,21 @@ const $  = (s, c = document) => c.querySelector(s);
 const $$ = (s, c = document) => [...c.querySelectorAll(s)];
 const reais = v => "R$ " + v.toFixed(2).replace(".", ",");
 const CHAVE = "reiburgao:carrinho";
+/* Por quanto tempo o carrinho continua guardado no aparelho. Sem isto, quem
+   pedia hoje voltava amanhã e encontrava a sacola cheia do pedido antigo. */
+const VALIDADE_CARRINHO = 3 * 60 * 60 * 1000;   // 3 horas
 
 let carrinho = [];
-try { carrinho = JSON.parse(localStorage.getItem(CHAVE) || "[]"); } catch (e) { carrinho = []; }
+try {
+  const guardado = JSON.parse(localStorage.getItem(CHAVE) || "null");
+  if (Array.isArray(guardado)) {
+    carrinho = guardado;                       // formato antigo, sem hora
+  } else if (guardado && Array.isArray(guardado.itens)) {
+    const velho = Date.now() - (guardado.em || 0) > VALIDADE_CARRINHO;
+    carrinho = velho ? [] : guardado.itens;
+    if (velho) localStorage.removeItem(CHAVE);
+  }
+} catch (e) { carrinho = []; }
 
 /* ========================= cardápio ========================= */
 function montarCardapio() {
@@ -224,7 +236,29 @@ function fecharModal() {
 }
 
 /* ========================= carrinho ========================= */
-function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(carrinho)); } catch (e) {} }
+function salvar() {
+  try {
+    if (!carrinho.length) { localStorage.removeItem(CHAVE); return; }
+    localStorage.setItem(CHAVE, JSON.stringify({ itens: carrinho, em: Date.now() }));
+  } catch (e) {}
+}
+
+/* depois de enviar, a sacola some: o pedido já foi para o WhatsApp */
+function esvaziarDepoisDoEnvio() {
+  carrinho = [];
+  try { localStorage.removeItem(CHAVE); } catch (e) {}
+  pintarCarrinho();
+  const f = $("[data-checkout]") || document.querySelector("form");
+  if (f && f.reset) {
+    const nome = f.nome ? f.nome.value : "";
+    const fone = f.fone ? f.fone.value : "";
+    f.reset();
+    /* nome e telefone ficam: é a mesma pessoa pedindo de novo */
+    if (f.nome) f.nome.value = nome;
+    if (f.fone) f.fone.value = fone;
+  }
+  abrirCarrinho(false);
+}
 
 function adicionarDoModal() {
   if (!itemAtual) return;
@@ -732,6 +766,7 @@ function enviarPedido(e) {
   /* confirmação na própria tela, para o cliente não ficar sem resposta
      caso o WhatsApp demore a abrir ou o navegador bloqueie a janela */
   mostrarConfirmacao(f.nome.value.trim());
+  esvaziarDepoisDoEnvio();
 }
 
 function mostrarConfirmacao(nome) {
