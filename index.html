@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/estilo.css?v=15" />
+<link rel="stylesheet" href="assets/css/estilo.css?v=16" />
 </head>
 <body>
 <div class="barra-progresso" aria-hidden="true"><i></i></div>
@@ -88,17 +88,17 @@
     <div class="cardapio" data-cardapio></div>
   </section>
 
-  <section id="combos" class="secao destaque" data-surge>
-    <div class="destaque-caixa">
-      <p class="chamada">Mais pedido</p>
+  <section id="combos" class="secao promo" data-surge>
+    <div class="promo-topo">
+      <p class="promo-tarja">👑 Promoção da casa</p>
       <h2>Combo na caixa</h2>
-      <p>De 2 a 5 lanches numa caixa só, com <b>fritas, nuggets, anel de cebola, molho e refrigerante</b>. Você escolhe cada lanche entre burguer, cheddar ou salada.</p>
-      <ul class="lista-combo">
-        <li><span>Tradicional — 2 hambúrgueres 56g</span><b>a partir de R$ 64,90</b></li>
-        <li><span>Artesanal — hambúrguer 150g</span><b>a partir de R$ 79,90</b></li>
-      </ul>
-      <button class="botao primario" type="button" data-ir-combos>Ver os combos</button>
+      <p class="promo-apoio">
+        De 2 a 5 lanches numa caixa só, com <b>fritas, nuggets, anel de cebola, molho e refrigerante</b>.
+        Você escolhe cada lanche. A partir de <b data-combo-apartir>R$ 64,90</b>.
+      </p>
     </div>
+    <div class="promo-vitrine" data-vitrine-combos></div>
+    <p class="promo-rodape">Imagens ilustrativas. O refrigerante acompanha a caixa.</p>
   </section>
 
   <section class="secao avaliacoes" aria-labelledby="t-aval">
@@ -302,7 +302,7 @@
   </div>
 </div>
 
-<script src="assets/js/app.js?v=15"></script>
-<script type="module" src="assets/js/envio.js?v=15"></script>
+<script src="assets/js/app.js?v=16"></script>
+<script type="module" src="assets/js/envio.js?v=16"></script>
 </body>
 </html>
