@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/comanda.css?v=12" />
-<link rel="stylesheet" href="assets/css/painel.css?v=12" />
+<link rel="stylesheet" href="assets/css/comanda.css?v=13" />
+<link rel="stylesheet" href="assets/css/painel.css?v=13" />
 </head>
 <body>
 
@@ -52,6 +52,7 @@
       <button type="button" data-filtro="todos" aria-pressed="false">Todos de hoje</button>
       <button type="button" data-filtro="historico" aria-pressed="false">Histórico</button>
       <button type="button" data-filtro="caixa" aria-pressed="false">💰 Caixa</button>
+      <button type="button" data-filtro="balcao" aria-pressed="false">🧾 Balcão</button>
       <label class="caixa-data" data-caixa-data hidden>
         <span>Dia</span>
         <input type="date" data-data />
@@ -71,22 +72,78 @@
 
   <section class="caixa" data-caixa hidden></section>
 
+  <section class="balcao envolve" data-balcao hidden>
+
+    <div class="bloco">
+      <h2>Pedido que não veio do site</h2>
+      <p class="ajuda">Para o cliente que chegou no balcão, ligou, ou mandou o pedido escrito no WhatsApp. Cole o texto ou escreva o pedido aqui.</p>
+      <textarea data-entrada placeholder="Ex.: 2x X-Tudo, 1 Coca 2L — cliente João, retirada, pix"></textarea>
+      <div class="botoes">
+        <button type="button" class="principal" data-colar>Colar do WhatsApp</button>
+        <button type="button" data-limpar>Limpar</button>
+      </div>
+      <p class="aviso" data-aviso hidden></p>
+    </div>
+
+    <div class="bloco">
+      <h2>Como vai sair no papel</h2>
+      <div class="area-papel">
+        <div class="papel" data-papel></div>
+      </div>
+
+      <div class="campos">
+        <label class="campo">
+          <span>Taxa de entrega</span>
+          <input type="text" inputmode="decimal" data-taxa placeholder="ex.: 5,00" />
+        </label>
+        <label class="marca">
+          <input type="checkbox" data-semacento />
+          Tirar acentos na impressão direta
+        </label>
+      </div>
+
+      <div class="botoes" data-acoes hidden>
+        <button type="button" class="principal larga" data-imprimir>🖨️ Imprimir comanda</button>
+        <button type="button" data-direto>Imprimir direto (RawBT)</button>
+        <button type="button" data-gaveta>Abrir gaveta</button>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <h2>Últimas comandas de hoje</h2>
+      <p class="ajuda">Toque em uma para imprimir de novo.</p>
+      <p class="ajuda" data-historico-vazio>Nenhuma comanda impressa ainda.</p>
+      <ul class="lista-comandas" data-historico></ul>
+    </div>
+
+    <details class="guia">
+      <summary>Como deixar a impressora pronta</summary>
+      <ol>
+        <li><strong>No computador</strong>: ligue a impressora pelo cabo USB e instale o driver que veio com ela. Depois é só usar o botão “Imprimir comanda”, escolher a GS-T80EBT e mandar.</li>
+        <li><strong>No celular Android</strong>: instale o aplicativo <strong>RawBT</strong> na Play Store, ligue o Bluetooth, pareie a <strong>GS-T80EBT</strong> e deixe o papel em <strong>80mm / 48 colunas</strong>.</li>
+        <li><strong>Gaveta de dinheiro</strong>: o cabo entra na saída própria atrás da impressora, a que parece entrada de telefone.</li>
+        <li><strong>Cartaz com QR Code</strong> para colar no balcão: <a href="qrcode.html" target="_blank" rel="noopener">abrir para imprimir</a>.</li>
+      </ol>
+    </details>
+
+  </section>
+
+
+
   <main class="lista" data-lista>
     <p class="vazio">Carregando os pedidos de hoje…</p>
   </main>
 
   <footer class="rodape-painel">
     <p>Esta tela precisa ficar <strong>aberta</strong> para apitar quando chegar pedido. Deixe fixada numa aba do navegador.</p>
-    <a href="comanda.html">Imprimir um pedido colado do WhatsApp →</a>
+    <a href="qrcode.html" target="_blank" rel="noopener">Cartaz com QR Code para imprimir →</a>
   </footer>
 
 </div>
 
-<!-- área usada só na hora de imprimir (fica fora da tela) -->
-<div class="papel" data-papel aria-hidden="true"></div>
-
-<script src="assets/js/comanda-core.js?v=12"></script>
-<script src="assets/js/caixa.js?v=12"></script>
-<script type="module" src="assets/js/painel.js?v=12"></script>
+<script src="assets/js/comanda-core.js?v=13"></script>
+<script src="assets/js/caixa.js?v=13"></script>
+<script src="assets/js/comanda.js?v=13"></script>
+<script type="module" src="assets/js/painel.js?v=13"></script>
 </body>
 </html>
