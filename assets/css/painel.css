@@ -242,7 +242,7 @@
 .cx-form input:first-child{flex:1}
 
 /* ---------- aba Balcão (a comanda trazida para dentro do painel) ---------- */
-.balcao{max-width:640px;margin:0 auto;padding:8px 16px 60px}
+.balcao{max-width:1500px;margin:0 auto;padding:8px 16px 60px}
 .balcao .bloco{
   background:var(--carvao);border:1px solid var(--linha);border-radius:var(--raio-g);
   padding:18px;margin-bottom:16px;

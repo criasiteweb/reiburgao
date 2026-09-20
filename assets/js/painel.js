@@ -146,6 +146,9 @@ onAuthStateChanged(auth, usuario => {
     mostrarLogin(false);
     el("[data-senha]").value = "";
     escutarPedidos();
+    carregarCaixa(hojeISO()).then(() => {
+      if (window.rbAoCarregarComandas) window.rbAoCarregarComandas();
+    });
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission().catch(() => {});
     }
@@ -401,7 +404,8 @@ function linhaValor(rot, valor, cls = "") {
 function desenharCaixa() {
   const alvo = el("[data-caixa]");
   if (!alvo) return;
-  const a = apurar(pedidos);
+  const doBalcao = (caixaDoDia.comandas || []);
+  const a = apurar(pedidos.concat(doBalcao));
   const desp = somaDespesas(caixaDoDia.despesas);
   const lucro = a.liquido - desp;
   const dia = diaDoCaixa === hojeISO() ? "hoje" : formatarData(diaDoCaixa);
@@ -431,10 +435,9 @@ function desenharCaixa() {
         <h3>Fechamento</h3>
         ${linhaValor("Vendas (com taxa)", a.bruto)}
         ${linhaValor("− Taxa do motoboy", a.taxas, "menos")}
-        ${linhaValor("= Venda da comanda", a.liquido, "forte")}
         ${linhaValor("− Mercadoria", desp, "menos")}
         <div class="cx-linha lucro"><span>= Lucro do dia</span><b>${reais(lucro)}</b></div>
-        <p class="cx-nota">${a.quantidade} ${a.quantidade === 1 ? "pedido" : "pedidos"}${a.recusados ? ` · ${a.recusados} recusado${a.recusados > 1 ? "s" : ""}` : ""}</p>
+        <p class="cx-nota">${a.quantidade} ${a.quantidade === 1 ? "venda" : "vendas"}${doBalcao.length ? ` · ${doBalcao.length} do balcão` : ""}${a.recusados ? ` · ${a.recusados} recusado${a.recusados > 1 ? "s" : ""}` : ""}</p>
       </section>
 
       <section class="cx-cartao">
@@ -469,11 +472,33 @@ function desenharCaixa() {
 }
 
 /* ---------- relatório mensal ---------- */
+const NOMES_MES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+                   "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+/* Barra com os meses: os doze do ano corrente mais os do ano passado, para
+   ele poder olhar o mês passado sem precisar mexer em data nenhuma. */
+function barraDeMeses(selecionado) {
+  const hoje = new Date();
+  const anoAtual = hoje.getFullYear();
+  const mesAtual = hoje.getMonth();
+  const lista = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(anoAtual, mesAtual - i, 1);
+    lista.push({
+      iso: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`,
+      rotulo: NOMES_MES[d.getMonth()] + (d.getFullYear() !== anoAtual ? " " + d.getFullYear() : "")
+    });
+  }
+  return `<div class="cx-meses">${lista.map(m =>
+    `<button type="button" data-mes="${m.iso}" class="${m.iso.slice(0,7) === String(selecionado).slice(0,7) ? "ativo" : ""}">${m.rotulo}</button>`
+  ).join("")}</div>`;
+}
+
 async function relatorioMes(iso) {
   const alvo = el("[data-relatorio-mes]");
   const [ano, mes] = (iso || hojeISO()).split("-");
   alvo.hidden = false;
-  alvo.innerHTML = `<p class="vazio">Somando o mês…</p>`;
+  alvo.innerHTML = barraDeMeses(iso || hojeISO()) + `<p class="vazio">Somando o mês…</p>`;
 
   const de = new Date(+ano, +mes - 1, 1);
   const ate = new Date(+ano, +mes, 1);
@@ -492,11 +517,6 @@ async function relatorioMes(iso) {
       (porDia[dia] = porDia[dia] || []).push(p);
     });
 
-    const a = apurar(todos);
-    const dias = Object.keys(porDia).sort();
-    const melhor = dias.reduce((m, d) =>
-      apurar(porDia[d]).bruto > (m.v || 0) ? { d, v: apurar(porDia[d]).bruto } : m, {});
-
     /* mercadoria do mês: soma o que foi lançado no caixa de cada dia */
     const prefixo = `${ano}-${mes}`;
     let mercadoria = 0;
@@ -505,16 +525,26 @@ async function relatorioMes(iso) {
       const cx = await getDocs(collection(db, "caixa"));
       cx.docs.forEach(d => {
         if (!d.id.startsWith(prefixo)) return;
-        const soma = somaDespesas((d.data() || {}).despesas);
+        const dados = d.data() || {};
+        const soma = somaDespesas(dados.despesas);
         gastoPorDia[d.id] = soma;
         mercadoria += soma;
+        /* as comandas do balcão são vendas como as outras */
+        (dados.comandas || []).forEach(v => {
+          (porDia[d.id] = porDia[d.id] || []).push(v);
+          todos.push(v);
+        });
       });
     } catch (e) { /* sem acesso ao caixa: o relatório sai sem a mercadoria */ }
 
+    const a = apurar(todos);
+    const dias = Object.keys(porDia).sort();
+    const melhor = dias.reduce((m, d) =>
+      apurar(porDia[d]).bruto > (m.v || 0) ? { d, v: apurar(porDia[d]).bruto } : m, {});
     const sobrou = a.liquido - mercadoria;
     const diasComVenda = dias.length || 1;
 
-    alvo.innerHTML = `
+    alvo.innerHTML = barraDeMeses(iso || hojeISO()) + `
       <h3>Relatório de ${de.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}</h3>
       <div class="cx-grade">
 
@@ -572,7 +602,7 @@ async function relatorioMes(iso) {
       </table>`;
   } catch (e) {
     console.error(e);
-    alvo.innerHTML = `<p class="vazio">Não consegui montar o relatório. Verifique a internet.</p>`;
+    alvo.innerHTML = barraDeMeses(iso || hojeISO()) + `<p class="vazio">Não consegui montar o relatório. Verifique a internet.</p>`;
   }
 }
 
@@ -591,6 +621,9 @@ document.addEventListener("click", async e => {
     await gravarCaixa(); desenharCaixa(); return;
   }
   if (e.target.closest("[data-relatorio]")) { relatorioMes(diaDoCaixa); return; }
+
+  const bm = e.target.closest("[data-mes]");
+  if (bm) { relatorioMes(bm.dataset.mes); return; }
 
   const apaga = e.target.closest("[data-apaga-despesa]");
   if (apaga) {
@@ -678,6 +711,30 @@ async function mudarStatus(id, status) {
   }
 }
 
+
+/* ========================= ponte com a comanda do balcão =========================
+   A comanda fechada vira uma venda de verdade: fica guardada dentro do caixa do
+   dia e entra no total por forma de pagamento, junto com os pedidos do site. */
+window.rbComandas = {
+  dia: () => diaDoCaixa,
+  listar: () => (caixaDoDia.comandas || []).slice(),
+
+  gravar: async (c) => {
+    caixaDoDia.comandas = caixaDoDia.comandas || [];
+    const i = caixaDoDia.comandas.findIndex(x => x.id === c.id);
+    if (i >= 0) caixaDoDia.comandas[i] = c; else caixaDoDia.comandas.push(c);
+    await gravarCaixa();
+    desenharCaixa();
+    return true;
+  },
+
+  remover: async (id) => {
+    caixaDoDia.comandas = (caixaDoDia.comandas || []).filter(x => x.id !== id);
+    await gravarCaixa();
+    desenharCaixa();
+    return true;
+  }
+};
 
 /* ========================= avisar o cliente ========================= */
 /* Abre o WhatsApp do cliente com a mensagem já escrita, conforme a etapa.

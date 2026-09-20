@@ -246,6 +246,114 @@ function desenharTudo() {
   desenharGrupos(); desenharItens(); desenharComanda();
 }
 
+/* ========================= fechar a comanda ========================= */
+/* Fechar = a venda aconteceu. Ela sai das abas e entra no caixa do dia, já na
+   forma de pagamento escolhida, somando junto com os pedidos do site. */
+function comoVenda(c) {
+  const p = c.pedido;
+  const entrega = /entrega/i.test(p.tipo || "");
+  const taxa = entrega ? (Number(p.taxa) || 0) : 0;
+  return {
+    id: c.id,
+    numero: c.num,
+    origem: "balcao",
+    status: "concluido",
+    hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    cliente: p.cliente || "",
+    fone: p.fone || "",
+    tipo: c.mesa && /mesa/i.test(p.tipo) ? "Mesa " + c.mesa : p.tipo,
+    endereco: p.endereco || "",
+    pagamento: paraImpressao().pagamento || "",
+    forma: c.forma || "",
+    recebido: c.recebido || "",
+    mesa: c.mesa || "",
+    obs: p.obs || "",
+    itens: p.itens.map(i => ({ ref: i.ref || "", q: i.q, nome: i.nome, unit: i.unit, total: i.total, obs: i.obs || "" })),
+    subtotal: p.subtotal,
+    taxa: taxa,
+    total: p.subtotal + taxa
+  };
+}
+
+async function fecharComanda() {
+  const c = comanda();
+  if (!c.pedido.itens.length) {
+    if (!confirm("Esta comanda está vazia. Fechar mesmo assim?")) return;
+    return descartar();
+  }
+  if (!c.forma) {
+    avisar("Escolha a forma de pagamento antes de fechar — é ela que leva o valor para o caixa.", true);
+    return;
+  }
+  const venda = comoVenda(c);
+  if (window.rbComandas) {
+    try { await window.rbComandas.gravar(venda); }
+    catch (e) { return avisar("Não consegui salvar no caixa. Verifique a internet e tente de novo.", true); }
+  }
+  descartar();
+  desenharHistoricoComandas();
+  avisar(`Comanda #${venda.numero} fechada — ${reais(venda.total)} em ${venda.forma}. Já entrou no caixa.`, false);
+}
+
+function descartar() {
+  if (comandas.length === 1) { comandas = []; novaComanda(false); }
+  else { comandas.splice(atual, 1); atual = Math.max(0, atual - 1); }
+  salvar(); desenharComanda();
+}
+
+/* ========================= histórico de comandas ========================= */
+function desenharHistoricoComandas() {
+  const alvo = $("[data-hist-comandas]");
+  if (!alvo) return;
+  const lista = window.rbComandas ? window.rbComandas.listar() : [];
+  if (!lista.length) {
+    alvo.innerHTML = `<p class="cmd-vazio">Nenhuma comanda fechada ainda hoje.</p>`;
+    return;
+  }
+  alvo.innerHTML = lista.slice().reverse().map(v => `
+    <div class="cmd-hist">
+      <div class="cmd-hist-topo">
+        <b>#${v.numero}</b>
+        <span>${escapa(v.cliente || v.tipo || "Balcão")}</span>
+        <i>${v.hora || ""}</i>
+      </div>
+      <div class="cmd-hist-baixo">
+        <span class="cmd-hist-forma">${escapa(v.forma || v.pagamento || "—")}</span>
+        <b>${reais(v.total || 0)}</b>
+      </div>
+      <div class="cmd-hist-acoes">
+        <button type="button" data-editar-comanda="${escapa(v.id)}">✎ Abrir para editar</button>
+        <button type="button" class="cmd-tira-hist" data-apagar-comanda="${escapa(v.id)}">✕ Apagar</button>
+      </div>
+    </div>`).join("");
+}
+
+/* traz a comanda fechada de volta para as abas, e tira do caixa enquanto
+   estiver sendo mexida — assim o valor não conta duas vezes */
+async function editarComanda(id) {
+  const v = (window.rbComandas ? window.rbComandas.listar() : []).find(x => x.id === id);
+  if (!v) return;
+  comandas.push({
+    id: v.id,
+    num: v.numero,
+    pedido: {
+      itens: (v.itens || []).map(i => ({ ref: i.ref || "", q: i.q, nome: i.nome, unit: i.unit, total: i.total, lanches: "", adds: "", obs: i.obs || "" })),
+      subtotal: v.subtotal || 0,
+      taxa: v.taxa || null,
+      cliente: v.cliente || "", fone: v.fone || "",
+      tipo: /^mesa/i.test(v.tipo || "") ? "Mesa" : (v.tipo || "Retirada no balcão"),
+      endereco: v.endereco || "", pagamento: "", obs: v.obs || ""
+    },
+    mesa: v.mesa || "", forma: v.forma || "", recebido: v.recebido || "",
+    criada: v.hora || ""
+  });
+  atual = comandas.length - 1;
+  recalcular();
+  try { await window.rbComandas.remover(id); } catch (e) {}
+  salvar(); desenharComanda(); desenharHistoricoComandas();
+  avisar("Comanda #" + v.numero + " reaberta. Ela sai do caixa enquanto você mexe, e volta quando fechar de novo.", false);
+}
+
 /* ========================= impressão ========================= */
 function textoParaImprimir() {
   const sem = $("[data-semacento]") && $("[data-semacento]").checked;
@@ -263,6 +371,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!$("[data-abas]")) return;   // não estamos no painel
   carregar();
   desenharTudo();
+  window.rbAoCarregarComandas = desenharHistoricoComandas;
+  desenharHistoricoComandas();
 
   const semAcentoCx = $("[data-semacento]");
   if (semAcentoCx) {
@@ -322,15 +432,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (e.target.closest("[data-fechar-comanda]")) {
-      if (comandas.length === 1) {
-        if (!confirm("Fechar esta comanda e começar uma nova em branco?")) return;
-        comandas = []; novaComanda(false);
-      } else {
-        if (!confirm("Fechar esta comanda? O que estiver nela será apagado.")) return;
-        comandas.splice(atual, 1);
-        atual = Math.max(0, atual - 1);
-      }
-      salvar(); desenharComanda(); return;
+      fecharComanda();
+      return;
+    }
+
+    const ed = e.target.closest("[data-editar-comanda]");
+    if (ed) { editarComanda(ed.dataset.editarComanda); return; }
+
+    const ap = e.target.closest("[data-apagar-comanda]");
+    if (ap) {
+      if (!confirm("Apagar esta comanda do caixa? O valor dela sai do total do dia.")) return;
+      (async () => {
+        try { await window.rbComandas.remover(ap.dataset.apagarComanda); } catch (e) {}
+        desenharHistoricoComandas();
+      })();
+      return;
     }
 
     if (e.target.closest("[data-imprimir]") && e.target.closest("[data-balcao]")) {
