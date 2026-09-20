@@ -875,6 +875,23 @@ pintarSom();
 
 el("[data-testar-som]").addEventListener("click", () => apitar(2));
 
+/* ========================= atualizar o sistema =========================
+   O navegador guarda a página para abrir mais rápido, e às vezes fica com uma
+   versão antiga. Este botão joga fora o que estiver guardado e busca a nova. */
+el("[data-atualizar]").addEventListener("click", async () => {
+  const b = el("[data-atualizar]");
+  b.disabled = true; b.textContent = "Atualizando…";
+  try {
+    if (window.caches && caches.keys) {
+      const nomes = await caches.keys();
+      await Promise.all(nomes.map(n => caches.delete(n)));
+    }
+  } catch (e) {}
+  const u = new URL(location.href);
+  u.searchParams.set("atualizado", String(Date.now()));
+  location.replace(u.toString());
+});
+
 /* ========================= trocar a senha da loja ========================= */
 el("[data-trocar-senha]").addEventListener("click", async () => {
   const user = auth.currentUser;

@@ -458,11 +458,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    if (e.target.closest("[data-gaveta]")) {
-      if (!ehAndroid()) return avisar("Abrir a gaveta pelo site só funciona no Android com o RawBT.", true);
-      mandarRawBT(ESC_GAVETA);
-      return;
-    }
 
     if (e.target.closest("[data-ler]")) {
       const t = $("[data-entrada]").value;
