@@ -199,7 +199,10 @@ function comandaTexto(p, num, semAcentos) {
   L.push(barra, "");
 
   /* o dado mais importante para o balcão, em destaque */
-  L.push(centro(entrega ? ">>> ENTREGA <<<" : ">>> RETIRADA <<<"), "");
+  const naMesa = /^mesa/i.test(p.tipo || "");
+  L.push(centro(entrega ? ">>> ENTREGA <<<"
+                        : naMesa ? ">>> " + String(p.tipo).toUpperCase() + " <<<"
+                                 : ">>> RETIRADA <<<"), "");
 
   /* quem é o cliente */
   L.push(secao("CLIENTE"));
@@ -279,7 +282,9 @@ function comandaHTML(p, num) {
     </div>
     <div class="lin num"><span>COMANDA ${num}</span><b>${agora()}</b></div>
 
-    <div class="tarja ${entrega ? "t-entrega" : "t-retirada"}">${entrega ? "ENTREGA" : "RETIRADA"}</div>
+    <div class="tarja ${entrega ? "t-entrega" : /^mesa/i.test(p.tipo || "") ? "t-mesa" : "t-retirada"}">${
+      entrega ? "ENTREGA" : /^mesa/i.test(p.tipo || "") ? esc(String(p.tipo).toUpperCase()) : "RETIRADA"
+    }</div>
 
     ${bloco("Cliente")}
     ${dado("Nome", p.cliente)}
