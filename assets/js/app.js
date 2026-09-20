@@ -660,6 +660,9 @@ function enviarPedido(e) {
   if (soDigitos(f.fone.value).length < 10) return erro(f.fone, "Confira o número do WhatsApp com DDD.");
 
   const modo = f.tipo.value;
+  if (lojaNoManual === false) {
+    return avisoStatus("A loja está fechada no momento. Tente de novo mais tarde.");
+  }
   const tipo = modo;
   if (tipo === "Entrega") {
     if (!f.endereco.value.trim()) return erro(f.endereco, "Diga o nome da rua para entregarmos.");
@@ -750,16 +753,43 @@ function mostrarConfirmacao(nome) {
   caixa.addEventListener("click", e => { if (e.target === caixa) sair(); });
 }
 
-/* ========================= status aberto / fechado ========================= */
+function avisoStatus(msg) {
+  const st = $("[data-status]");
+  if (st) { st.textContent = msg; st.dataset.erro = "true"; }
+  return false;
+}
+
+/* ========================= status aberto / fechado =========================
+   O horário manda, mas a loja pode abrir ou fechar na mão pelo painel.
+   O estado é lido do servidor; se não der, vale o horário. */
+let lojaNoManual = null;   // true = aberta na mão, false = fechada na mão
+
 function statusLoja() {
   const selo = $("[data-status-selo]");
   const txt = $("[data-status-texto]");
   const agora = new Date();
   const h = agora.getHours() + agora.getMinutes() / 60;
   const fechadoHoje = LOJA.diasFechados.includes(agora.getDay());
-  const aberto = !fechadoHoje && (h >= LOJA.abre && h < LOJA.fecha);
+  const peloHorario = !fechadoHoje && (h >= LOJA.abre && h < LOJA.fecha);
+  const aberto = lojaNoManual === null ? peloHorario : lojaNoManual;
+
   selo.dataset.aberto = String(aberto);
-  txt.textContent = aberto ? "Aberto agora" : `Fechado · abre às ${LOJA.abre}h`;
+  txt.textContent = aberto
+    ? "Aberto agora"
+    : (lojaNoManual === false ? "Fechado no momento" : `Fechado · abre às ${LOJA.abre}h`);
+}
+
+/* lê o interruptor da loja no servidor (leitura pública, sem biblioteca) */
+async function lerEstadoLoja() {
+  const url = "https://firestore.googleapis.com/v1/projects/rei-burgao-pedidos/databases/(default)/documents/publico/loja";
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) return;
+    const d = await r.json();
+    const v = d && d.fields && d.fields.aberta;
+    if (v && typeof v.booleanValue === "boolean") lojaNoManual = v.booleanValue;
+  } catch (e) { /* sem internet ou sem permissão: vale o horário */ }
+  statusLoja();
 }
 
 /* ========================= efeitos ========================= */
@@ -785,7 +815,9 @@ document.addEventListener("DOMContentLoaded", () => {
   montarCardapio();
   pintarCarrinho();
   statusLoja();
+  lerEstadoLoja();
   setInterval(statusLoja, 60000);
+  setInterval(lerEstadoLoja, 120000);
   efeitos();
 
   $$("[data-abrir-carrinho]").forEach(b => b.addEventListener("click", () => abrirCarrinho(true)));

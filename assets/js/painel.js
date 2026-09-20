@@ -146,6 +146,7 @@ onAuthStateChanged(auth, usuario => {
     mostrarLogin(false);
     el("[data-senha]").value = "";
     escutarPedidos();
+    lerEstadoLoja();
     carregarCaixa(hojeISO()).then(() => {
       if (window.rbAoCarregarComandas) window.rbAoCarregarComandas();
     });
@@ -921,6 +922,48 @@ botaoSom.addEventListener("click", () => {
 pintarSom();
 
 el("[data-testar-som]").addEventListener("click", () => apitar(2));
+
+/* ========================= abrir e fechar a loja =========================
+   O selo do site do cliente segue o horário; este botão manda nele.
+   Serve para fechar antes da hora (acabou o pão) ou abrir fora do horário. */
+let lojaAberta = null;   // null = seguir o horário
+
+function pintarLoja() {
+  const b = el("[data-loja-estado]");
+  if (!b) return;
+  const fechada = lojaAberta === false;
+  b.textContent = fechada ? "Loja fechada" : "Loja aberta";
+  b.setAttribute("aria-pressed", String(!fechada));
+  b.dataset.fechada = String(fechada);
+}
+
+async function lerEstadoLoja() {
+  try {
+    const d = await getDoc(doc(db, "publico", "loja"));
+    lojaAberta = d.exists() ? (d.data().aberta !== false) : null;
+  } catch (e) { lojaAberta = null; }
+  pintarLoja();
+}
+
+el("[data-loja-estado]").addEventListener("click", async () => {
+  const fechando = lojaAberta !== false;
+  const aviso = fechando
+    ? "Fechar a loja agora?\n\nO site vai mostrar FECHADO para os clientes e não deixa enviar pedido."
+    : "Abrir a loja agora?\n\nO site volta a aceitar pedidos.";
+  if (!confirm(aviso)) return;
+  const antes = lojaAberta;
+  lojaAberta = !fechando;
+  pintarLoja();
+  try {
+    await setDoc(doc(db, "publico", "loja"), {
+      aberta: !fechando,
+      mudadoEm: Timestamp.now()
+    }, { merge: true });
+  } catch (e) {
+    lojaAberta = antes; pintarLoja();
+    alert("Não consegui salvar. Verifique a internet e tente de novo.");
+  }
+});
 
 /* ========================= atualizar o sistema =========================
    O navegador guarda a página para abrir mais rápido, e às vezes fica com uma

@@ -35,6 +35,15 @@
 }
 @keyframes pulsa{50%{transform:scale(1.14)}}
 
+.loja-estado{
+  flex:0 0 auto;padding:6px 12px;border-radius:9px;cursor:pointer;
+  font:700 12px/1.2 "Inter",sans-serif;
+  background:rgba(47,169,107,.14);color:var(--verde);border:1px solid rgba(47,169,107,.45);
+}
+.loja-estado[data-fechada="true"]{
+  background:rgba(216,38,28,.16);color:#FF8D82;border-color:rgba(216,38,28,.5);
+}
+
 /* botões do topo: discretos, só o necessário */
 .topo .sair{
   flex:0 0 auto;padding:6px 11px;border-radius:9px;cursor:pointer;
