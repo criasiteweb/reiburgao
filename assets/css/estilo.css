@@ -453,3 +453,13 @@ em{font-style:normal;color:var(--amarelo)}
 .linha-taxa b{font-weight:700}
 .linha-geral{font-size:18px;font-weight:800;padding-top:6px;border-top:1px solid rgba(255,255,255,.12)}
 .linha-geral b{color:#FFC20E}
+
+/* ---------- como chegar: Google Maps e Waze ---------- */
+.ir-ate{display:flex;flex-direction:column;gap:8px}
+.ir-ate-rot{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(237,234,226,.55)}
+.ir-ate-botoes{display:flex;flex-wrap:wrap;gap:10px}
+.ir-ate-botoes .rota{display:inline-flex;align-items:center;gap:8px}
+.ir-ate-botoes.compacto{gap:14px;margin-top:6px}
+.ir-ate-botoes.compacto a{font-size:14px;font-weight:600;text-decoration:none;color:#FFC20E}
+.ir-ate-botoes.compacto a:hover{text-decoration:underline}
+.tempo-preparo{margin:6px 0 10px;font-size:13.5px;color:rgba(237,234,226,.68);text-align:center}
