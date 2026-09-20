@@ -255,6 +255,7 @@ function resumoItens(p) {
 function cartao(p) {
   const etapa = ETAPAS[p.status] || ETAPAS.novo;
   const entrega = /entrega/i.test(p.tipo || "");
+  const naMesa = /^mesa/i.test(p.tipo || "");
   return `
   <article class="pedido" data-status="${esc(p.status)}" data-id="${esc(p.id)}">
     <header>
@@ -265,7 +266,9 @@ function cartao(p) {
 
     <div class="quem">
       <strong>${esc(p.cliente) || "Sem nome"}</strong>
-      <span class="tipo ${entrega ? "t-entrega" : "t-retirada"}">${entrega ? "🛵 Entrega" : "🏠 Retirada"}</span>
+      <span class="tipo ${entrega ? "t-entrega" : naMesa ? "t-mesa" : "t-retirada"}">${
+        entrega ? "🛵 Entrega" : naMesa ? "🪑 " + esc(p.tipo) : "🏠 Retirada"
+      }</span>
     </div>
 
     ${p.fone ? `<span class="fone">${esc(p.fone)}</span>` : ""}
