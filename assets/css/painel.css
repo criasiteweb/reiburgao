@@ -139,6 +139,10 @@
   .barra{gap:10px;padding:12px}
   .ajustes{width:100%}
   .lista{grid-template-columns:1fr;padding:4px 12px 32px}
+  /* no celular as cinco abas precisam caber: quebram em duas linhas
+     em vez de a última ficar escondida fora da tela */
+  .filtros{flex-wrap:wrap;width:100%}
+  .filtros button{flex:1 1 auto;padding:10px 12px;font-size:13.5px}
 }
 
 /* ---------- histórico e resumo do dia ---------- */
