@@ -11,7 +11,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
-  browserLocalPersistence, setPersistence
+  browserLocalPersistence, setPersistence, updatePassword,
+  EmailAuthProvider, reauthenticateWithCredential
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import {
   getFirestore, collection, query, where, orderBy, onSnapshot, getDocs,
@@ -780,6 +781,42 @@ botaoSom.addEventListener("click", () => {
 pintarSom();
 
 el("[data-testar-som]").addEventListener("click", () => apitar(2));
+
+/* ========================= trocar a senha da loja ========================= */
+el("[data-trocar-senha]").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) return alert("Entre no painel antes de trocar a senha.");
+
+  const atual = prompt("Para sua segurança, digite a senha que você usa hoje:");
+  if (atual === null) return;
+  if (!atual.trim()) return alert("A senha de hoje não pode ficar em branco.");
+
+  const nova = prompt("Agora digite a NOVA senha (pelo menos 6 letras ou números):");
+  if (nova === null) return;
+  if (nova.trim().length < 6) return alert("A nova senha precisa ter pelo menos 6 letras ou números.");
+
+  const confere = prompt("Digite a nova senha de novo para conferir:");
+  if (confere === null) return;
+  if (confere !== nova) return alert("As duas não bateram. Nada foi alterado — tente de novo.");
+
+  try {
+    await reauthenticateWithCredential(user, EmailAuthProvider.credential(CONTA_LOJA, atual));
+    await updatePassword(user, nova);
+    alert("Pronto! A senha da loja foi trocada.\n\nAnote em lugar seguro: quem for abrir o painel em outro aparelho vai precisar dela.");
+  } catch (err) {
+    const cod = String(err && err.code || "");
+    if (/wrong-password|invalid-credential|invalid-login/.test(cod))
+      alert("A senha de hoje está errada. Nada foi alterado.");
+    else if (/weak-password/.test(cod))
+      alert("Essa senha é fraca demais. Use pelo menos 6 letras ou números.");
+    else if (/requires-recent-login/.test(cod))
+      alert("Por segurança, saia do painel, entre de novo e troque a senha logo em seguida.");
+    else if (/network/.test(cod))
+      alert("Sem internet. Tente de novo quando a conexão voltar.");
+    else
+      alert("Não consegui trocar a senha agora. Tente de novo em instantes.");
+  }
+});
 
 /* taxa de entrega fica guardada no computador da loja */
 const taxa = el("[data-taxa]");
