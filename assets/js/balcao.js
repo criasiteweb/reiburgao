@@ -341,13 +341,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (e.target.closest("[data-direto]")) {
-      if (!temItem()) return;
-      if (!ehAndroid()) return avisar("A impressão direta é só no celular Android com o RawBT. No computador use “Imprimir comanda”.", true);
-      mandarRawBT(textoParaImprimir() + "\n\n\n" + ESC_CORTE);
-      avisar("Mandado para a impressora.", false);
-      return;
-    }
 
     if (e.target.closest("[data-gaveta]")) {
       if (!ehAndroid()) return avisar("Abrir a gaveta pelo site só funciona no Android com o RawBT.", true);

@@ -12,8 +12,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/comanda.css?v=21" />
-<link rel="stylesheet" href="assets/css/painel.css?v=21" />
+<script>
+/* carimbo que muda a cada 2 minutos: mesmo que o aparelho guarde a página,
+   a aparência e os programas vêm sempre atualizados */
+(function(){
+  var t = Math.floor(Date.now() / 120000);
+  document.write('<link rel="stylesheet" href="assets/css/comanda.css?t=' + t + '">');
+  document.write('<link rel="stylesheet" href="assets/css/painel.css?t=' + t + '">');
+})();
+</script>
+<noscript><link rel="stylesheet" href="assets/css/comanda.css" /><link rel="stylesheet" href="assets/css/painel.css" /></noscript>
 </head>
 <body>
 
@@ -140,7 +148,6 @@
 
         <div class="cmd-botoes">
           <button type="button" class="principal larga" data-imprimir>🖨️ Imprimir comanda</button>
-          <button type="button" data-direto>Imprimir direto (RawBT)</button>
           <button type="button" data-gaveta>Abrir gaveta</button>
           <button type="button" class="cmd-fechar" data-fechar-comanda>✓ Fechar esta comanda</button>
         </div>
@@ -169,7 +176,6 @@
       <summary>Como deixar a impressora pronta</summary>
       <ol>
         <li><strong>No computador</strong>: ligue a impressora pelo cabo USB e instale o driver que veio com ela. Depois é só usar o botão “Imprimir comanda”, escolher a GS-T80EBT e mandar.</li>
-        <li><strong>No celular Android</strong>: instale o aplicativo <strong>RawBT</strong> na Play Store, ligue o Bluetooth, pareie a <strong>GS-T80EBT</strong> e deixe o papel em <strong>80mm / 48 colunas</strong>.</li>
         <li><strong>Gaveta de dinheiro</strong>: o cabo entra na saída própria atrás da impressora, a que parece entrada de telefone.</li>
         <li><strong>Cartaz com QR Code</strong> para colar no balcão: <a href="qrcode.html" target="_blank" rel="noopener">abrir para imprimir</a>.</li>
       </ol>
@@ -190,10 +196,14 @@
 
 </div>
 
-<script src="assets/js/comanda-core.js?v=21"></script>
-<script src="assets/js/caixa.js?v=21"></script>
-<script src="assets/js/cardapio.js?v=21"></script>
-<script src="assets/js/balcao.js?v=21"></script>
-<script type="module" src="assets/js/painel.js?v=21"></script>
+<script>
+(function(){
+  var t = Math.floor(Date.now() / 120000);
+  ["comanda-core", "caixa", "cardapio", "balcao"].forEach(function(a){
+    document.write('<script src="assets/js/' + a + '.js?t=' + t + '"><\/script>');
+  });
+  document.write('<script type="module" src="assets/js/painel.js?t=' + t + '"><\/script>');
+})();
+</script>
 </body>
 </html>
