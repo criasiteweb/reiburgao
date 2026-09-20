@@ -714,7 +714,12 @@ function enviarPedido(e) {
   if (!f.nome.value.trim()) return erro(f.nome, "Diga seu nome para a gente te chamar.");
   if (soDigitos(f.fone.value).length < 10) return erro(f.fone, "Confira o número do WhatsApp com DDD.");
 
-  const tipo = f.tipo.value;
+  const modo = f.tipo.value;
+  if (modo === "Mesa" && !f.mesa.value.trim()) {
+    return erro(f.mesa, "Diga o número da mesa para levarmos seu pedido.");
+  }
+  /* na mesa, o pedido vai identificado pelo número */
+  const tipo = modo === "Mesa" ? `Mesa ${f.mesa.value.trim()}` : modo;
   if (tipo === "Entrega") {
     if (!f.endereco.value.trim()) return erro(f.endereco, "Diga o nome da rua para entregarmos.");
     if (!f.numero.value.trim())   return erro(f.numero, "Falta o número da casa ou do prédio.");
@@ -881,12 +886,19 @@ document.addEventListener("DOMContentLoaded", () => {
   form.fone.addEventListener("input", e => { e.target.value = formatarFone(e.target.value); });
   const campos = $("[data-campos-entrega]"), troco = $("[data-campo-troco]");
   $$('input[name="tipo"]', form).forEach(r => r.addEventListener("change", () => {
-    const entrega = form.tipo.value === "Entrega";
+    const modo = form.tipo.value;                    // Entrega | Retirada no balcão | Mesa
+    const entrega = modo === "Entrega";
+    const mesa = modo === "Mesa";
     campos.hidden = !entrega;
-    $("[data-caixa-retirada]").hidden = entrega;
+    $("[data-caixa-retirada]").hidden = entrega || mesa;
+    $("[data-caixa-mesa]").hidden = !mesa;
     $(".aviso-taxa").hidden = !entrega;
     const opcCartao = [...form.pagamento.options].find(o => o.value.startsWith("Cartão"));
-    if (opcCartao) { opcCartao.value = opcCartao.textContent = entrega ? "Cartão na entrega" : "Cartão"; }
+    if (opcCartao) {
+      opcCartao.value = opcCartao.textContent =
+        entrega ? "Cartão na entrega" : mesa ? "Cartão na mesa" : "Cartão";
+    }
+    if (mesa) form.mesa.focus();
     atualizarTaxa();
   }));
   document.querySelector("[name=bairroOutro]").addEventListener("input", atualizarTaxa);
