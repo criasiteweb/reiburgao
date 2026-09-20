@@ -157,3 +157,4 @@ details.guia strong{color:var(--texto)}
 /* nome comprido quebra, mas o preço fica na mesma linha do início do item */
 .papel .lin > span{min-width:0;overflow-wrap:anywhere}
 .papel .lin > b{white-space:nowrap;flex:0 0 auto}
+.papel .tarja.t-mesa{background:#111;color:#fff}
