@@ -134,6 +134,11 @@ details.guia strong{color:var(--texto)}
 @media print{
   @page{ size: 80mm auto; margin: 0; }
   html,body{background:#fff !important}
+  /* a folha mora dentro da aba Comanda: se ela estiver escondida, a impressão
+     sai em branco, porque "visível" não desfaz "escondido" */
+  [data-balcao][hidden]{ display:block !important; }
+  [data-balcao][hidden] .bloco,
+  [data-balcao][hidden] .guia{ display:none !important; }
   body *{visibility:hidden !important}
   .papel, .papel *{visibility:visible !important}
   .papel{
@@ -158,3 +163,139 @@ details.guia strong{color:var(--texto)}
 .papel .lin > span{min-width:0;overflow-wrap:anywhere}
 .papel .lin > b{white-space:nowrap;flex:0 0 auto}
 .papel .tarja.t-mesa{background:#111;color:#fff}
+
+/* =========================================================
+   Aba Comanda do painel — montar pedido clicando no cardápio
+   ========================================================= */
+.balcao{ padding: 14px clamp(12px, 3vw, 22px) 40px; }
+
+/* ---- abas de comandas abertas ---- */
+.cmd-abas{
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px;
+  scrollbar-width: thin;
+}
+.cmd-aba{
+  flex: none; display: grid; gap: 2px; text-align: left;
+  padding: 9px 14px; border-radius: 12px; cursor: pointer;
+  background: #17171B; color: #EDEAE2;
+  border: 1px solid rgba(237,234,226,.14);
+}
+.cmd-aba b{ font-size: .88rem; font-weight: 700; }
+.cmd-aba i{ font-size: .74rem; opacity: .65; font-style: normal; }
+.cmd-aba.ativa{ background: #FFC20E; color: #17171B; border-color: #FFC20E; }
+.cmd-aba.ativa i{ opacity: .8; }
+.cmd-aba.nova{ background: transparent; border-style: dashed; align-self: stretch; }
+
+/* ---- as três colunas ---- */
+.cmd-area{
+  display: grid; gap: 14px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 980px){
+  .cmd-area{ grid-template-columns: 1fr 1.05fr .85fr; align-items: start; }
+}
+
+.cmd-cardapio, .cmd-pedido, .cmd-folha{
+  background: #131316; border: 1px solid rgba(237,234,226,.1);
+  border-radius: 16px; padding: 14px;
+}
+
+/* ---- cardápio para clicar ---- */
+.cmd-busca input{
+  width: 100%; padding: 11px 13px; border-radius: 11px;
+  background: #0E0E10; color: #EDEAE2; font-size: 1rem;
+  border: 1px solid rgba(237,234,226,.18);
+}
+.cmd-grupos{ display: flex; flex-wrap: wrap; gap: 6px; margin: 11px 0; }
+.cmd-grupos button{
+  padding: 6px 11px; border-radius: 999px; cursor: pointer; font-size: .8rem;
+  background: #1C1C21; color: #EDEAE2; border: 1px solid rgba(237,234,226,.14);
+}
+.cmd-grupos button.ativo{ background: #FFC20E; color: #17171B; border-color: #FFC20E; font-weight: 700; }
+
+.cmd-itens{ display: grid; gap: 6px; max-height: 46vh; overflow-y: auto; padding-right: 4px; }
+.cmd-item{
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 12px; border-radius: 10px; cursor: pointer; text-align: left;
+  background: #1A1A1F; color: #EDEAE2; border: 1px solid transparent;
+  font-size: .88rem;
+}
+.cmd-item:hover{ border-color: #FFC20E; }
+.cmd-item:active{ transform: scale(.99); }
+.cmd-item b{ color: #FFC20E; white-space: nowrap; }
+.cmd-avulso{
+  width: 100%; margin-top: 10px; padding: 10px; border-radius: 10px; cursor: pointer;
+  background: transparent; color: #EDEAE2; border: 1px dashed rgba(237,234,226,.3); font-size: .85rem;
+}
+.cmd-vazio{ opacity: .6; font-size: .86rem; padding: 10px 2px; margin: 0; }
+
+/* ---- itens escolhidos ---- */
+.cmd-linhas{ display: grid; gap: 6px; margin-bottom: 14px; }
+.cmd-linha{
+  display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 10px; background: #1A1A1F;
+}
+.cmd-qtd{ display: flex; align-items: center; gap: 6px; }
+.cmd-qtd button{
+  width: 26px; height: 26px; border-radius: 7px; cursor: pointer; font-size: 1rem; line-height: 1;
+  background: #26262C; color: #EDEAE2; border: 1px solid rgba(237,234,226,.16);
+}
+.cmd-qtd b{ min-width: 16px; text-align: center; font-size: .9rem; }
+.cmd-nome{ display: grid; min-width: 0; }
+.cmd-nome span{ font-size: .87rem; overflow-wrap: anywhere; }
+.cmd-nome i{ font-size: .74rem; opacity: .7; font-style: normal; }
+.cmd-valor{ color: #FFC20E; font-size: .88rem; white-space: nowrap; }
+.cmd-obs, .cmd-tira{
+  width: 26px; height: 26px; border-radius: 7px; cursor: pointer; line-height: 1;
+  background: transparent; color: #EDEAE2; border: 1px solid rgba(237,234,226,.16);
+}
+.cmd-tira{ color: #FF8A7A; }
+
+/* ---- campos ---- */
+.cmd-campos{ display: grid; gap: 11px; }
+.cmd-campos .campo{ display: grid; gap: 5px; }
+.cmd-campos .campo > span{ font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; opacity: .65; }
+.cmd-campos input{
+  width: 100%; padding: 10px 12px; border-radius: 10px; font-size: .95rem;
+  background: #0E0E10; color: #EDEAE2; border: 1px solid rgba(237,234,226,.18);
+}
+.cmd-tipos, .cmd-pagto{ display: flex; flex-wrap: wrap; gap: 6px; }
+.cmd-tipos button, .cmd-pagto button{
+  flex: 1 1 auto; padding: 9px 10px; border-radius: 10px; cursor: pointer; font-size: .82rem;
+  background: #1C1C21; color: #EDEAE2; border: 1px solid rgba(237,234,226,.14);
+}
+.cmd-tipos button.ativo, .cmd-pagto button.ativo{
+  background: #FFC20E; color: #17171B; border-color: #FFC20E; font-weight: 700;
+}
+
+/* ---- totais ---- */
+.cmd-totais{ margin: 14px 0; display: grid; gap: 5px; }
+.cmd-total-linha{ display: flex; justify-content: space-between; font-size: .9rem; }
+.cmd-total-linha.geral{ font-size: 1.05rem; font-weight: 700; padding-top: 6px; border-top: 1px solid rgba(237,234,226,.14); }
+.cmd-total-linha.geral b{ color: #FFC20E; }
+.cmd-total-linha.troco b{ color: #7BE08F; }
+.cmd-total-linha.falta b{ color: #FF8A7A; }
+
+.cmd-botoes{ display: grid; gap: 8px; }
+.cmd-botoes button{
+  padding: 12px; border-radius: 11px; cursor: pointer; font-size: .92rem; font-weight: 600;
+  background: #1C1C21; color: #EDEAE2; border: 1px solid rgba(237,234,226,.16);
+}
+.cmd-botoes .principal{ background: #FFC20E; color: #17171B; border-color: #FFC20E; }
+.cmd-botoes .cmd-fechar{ border-color: rgba(255,138,122,.4); color: #FF8A7A; }
+
+.cmd-colar{ margin-top: 14px; }
+.cmd-colar summary{ cursor: pointer; font-size: .85rem; opacity: .75; }
+.cmd-colar textarea{
+  width: 100%; min-height: 110px; margin-top: 9px; padding: 11px; border-radius: 11px;
+  background: #0E0E10; color: #EDEAE2; border: 1px solid rgba(237,234,226,.18);
+  font-family: inherit; font-size: .9rem; resize: vertical;
+}
+.cmd-colar .botoes{ display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.cmd-colar .botoes button{
+  flex: 1 1 auto; padding: 10px; border-radius: 10px; cursor: pointer;
+  background: #1C1C21; color: #EDEAE2; border: 1px solid rgba(237,234,226,.16);
+}
+
+.cmd-folha h2{ font-size: .95rem; margin: 0 0 10px; }
+.cmd-folha .marca{ display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: .82rem; opacity: .8; }

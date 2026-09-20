@@ -29,11 +29,11 @@ const el = (s, r = document) => r.querySelector(s);
 const els = (s, r = document) => [...r.querySelectorAll(s)];
 
 const ETAPAS = {
-  novo:       { rotulo: "Novo",        proxima: "preparando", acao: "✅ Aceitar e imprimir" },
-  preparando: { rotulo: "Preparando",  proxima: "saiu",       acao: "Saiu para entrega" },
-  saiu:       { rotulo: "A caminho",   proxima: "concluido",  acao: "Concluir" },
-  concluido:  { rotulo: "Concluído",   proxima: null,         acao: null, reabre: true },
-  recusado:   { rotulo: "Recusado",    proxima: null,         acao: null, reabre: true }
+  novo:       { rotulo: "Novo",        proxima: "preparando", acao: "✅ Aceitar e imprimir", avisar: "📲 Avisar que recebemos" },
+  preparando: { rotulo: "Preparando",  proxima: "saiu",       acao: "🛵 Saiu para entrega",  avisar: "📲 Avisar que está pronto em 40min" },
+  saiu:       { rotulo: "A caminho",   proxima: "concluido",  acao: "Concluir",              avisar: "📲 Avisar que SAIU para entrega" },
+  concluido:  { rotulo: "Concluído",   proxima: null,         acao: null, reabre: true,      avisar: "📲 Agradecer" },
+  recusado:   { rotulo: "Recusado",    proxima: null,         acao: null, reabre: true,      avisar: "📲 Avisar que não dá" }
 };
 
 let pedidos = [];          // os do dia que está na tela, mais novos primeiro
@@ -52,15 +52,25 @@ function apitar(vezes = 3) {
     for (let i = 0; i < vezes; i++) {
       const t0 = audioCtx.currentTime + i * 0.38;
       const osc = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();   // segunda voz: dobra o corpo do som
       const vol = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, t0);
-      osc.frequency.setValueAtTime(1180, t0 + 0.14);
+      const forte = audioCtx.createDynamicsCompressor();  // empurra o volume para cima
+      forte.threshold.setValueAtTime(-28, t0);
+      forte.ratio.setValueAtTime(12, t0);
+      osc.type = "square";                        // onda cheia, corta o barulho da cozinha
+      osc2.type = "sine";
+      osc.frequency.setValueAtTime(950, t0);
+      osc.frequency.setValueAtTime(1300, t0 + 0.14);
+      osc2.frequency.setValueAtTime(475, t0);
+      osc2.frequency.setValueAtTime(650, t0 + 0.14);
       vol.gain.setValueAtTime(0.0001, t0);
-      vol.gain.exponentialRampToValueAtTime(0.32, t0 + 0.02);
-      vol.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.30);
-      osc.connect(vol); vol.connect(audioCtx.destination);
-      osc.start(t0); osc.stop(t0 + 0.32);
+      vol.gain.exponentialRampToValueAtTime(1.0, t0 + 0.02);
+      vol.gain.setValueAtTime(1.0, t0 + 0.26);
+      vol.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.34);
+      osc.connect(vol); osc2.connect(vol);
+      vol.connect(forte); forte.connect(audioCtx.destination);
+      osc.start(t0); osc.stop(t0 + 0.36);
+      osc2.start(t0); osc2.stop(t0 + 0.36);
     }
   } catch (e) { /* navegador sem áudio: o aviso visual continua valendo */ }
 }
@@ -286,7 +296,7 @@ function cartao(p) {
       <button type="button" class="principal" data-imprimir="${esc(p.id)}">🖨️ Imprimir</button>
       ${etapa.proxima ? `<button type="button" data-avancar="${esc(p.id)}">${esc(etapa.acao)}</button>` : ""}
       ${p.status === "novo" ? `<button type="button" class="recusar" data-recusar="${esc(p.id)}">Recusar</button>` : ""}
-      ${p.fone ? `<button type="button" class="avisar" data-avisar="${esc(p.id)}">📲 Avisar cliente</button>` : ""}
+      ${p.fone ? `<button type="button" class="avisar" data-avisar="${esc(p.id)}">${esc(etapa.avisar || "📲 Avisar cliente")}</button>` : ""}
       ${etapa.reabre ? `<button type="button" class="reabrir" data-reabrir="${esc(p.id)}">↩︎ Reabrir pedido</button>` : ""}
     </div>
   </article>`;
@@ -420,7 +430,7 @@ function desenharCaixa() {
         <h3>Fechamento</h3>
         ${linhaValor("Vendas (com taxa)", a.bruto)}
         ${linhaValor("− Taxa do motoboy", a.taxas, "menos")}
-        ${linhaValor("= Venda da cozinha", a.liquido, "forte")}
+        ${linhaValor("= Venda da comanda", a.liquido, "forte")}
         ${linhaValor("− Mercadoria", desp, "menos")}
         <div class="cx-linha lucro"><span>= Lucro do dia</span><b>${reais(lucro)}</b></div>
         <p class="cx-nota">${a.quantidade} ${a.quantidade === 1 ? "pedido" : "pedidos"}${a.recusados ? ` · ${a.recusados} recusado${a.recusados > 1 ? "s" : ""}` : ""}</p>
@@ -486,30 +496,78 @@ async function relatorioMes(iso) {
     const melhor = dias.reduce((m, d) =>
       apurar(porDia[d]).bruto > (m.v || 0) ? { d, v: apurar(porDia[d]).bruto } : m, {});
 
+    /* mercadoria do mês: soma o que foi lançado no caixa de cada dia */
+    const prefixo = `${ano}-${mes}`;
+    let mercadoria = 0;
+    const gastoPorDia = {};
+    try {
+      const cx = await getDocs(collection(db, "caixa"));
+      cx.docs.forEach(d => {
+        if (!d.id.startsWith(prefixo)) return;
+        const soma = somaDespesas((d.data() || {}).despesas);
+        gastoPorDia[d.id] = soma;
+        mercadoria += soma;
+      });
+    } catch (e) { /* sem acesso ao caixa: o relatório sai sem a mercadoria */ }
+
+    const sobrou = a.liquido - mercadoria;
+    const diasComVenda = dias.length || 1;
+
     alvo.innerHTML = `
       <h3>Relatório de ${de.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}</h3>
       <div class="cx-grade">
-        <section class="cx-cartao">
-          <h3>Resumo do mês</h3>
-          ${linhaValor("Faturamento", a.bruto, "forte")}
-          ${linhaValor("− Taxas de motoboy", a.taxas, "menos")}
-          ${linhaValor("= Venda da cozinha", a.liquido)}
-          <p class="cx-nota">${a.quantidade} pedidos em ${dias.length} ${dias.length === 1 ? "dia" : "dias"} · média de ${reais(a.quantidade ? a.bruto / a.quantidade : 0)} por pedido</p>
+
+        <section class="cx-cartao destaque-mes">
+          <h3>O mês em números</h3>
+          ${linhaValor("Faturamento total (com a taxa)", a.bruto, "forte")}
+          ${linhaValor("− O motoboy ganhou", a.taxas, "menos")}
+          ${linhaValor("= Venda da comanda", a.liquido)}
+          ${linhaValor("− Gastou de mercadoria", mercadoria, "menos")}
+          <div class="cx-linha lucro"><span>= Sobrou limpo para vocês</span><b>${reais(sobrou)}</b></div>
+          <p class="cx-nota">
+            ${a.quantidade} ${a.quantidade === 1 ? "pedido" : "pedidos"} em ${dias.length} ${dias.length === 1 ? "dia" : "dias"}
+            · média de ${reais(a.quantidade ? a.bruto / a.quantidade : 0)} por pedido
+            · ${reais(a.bruto / diasComVenda)} por dia
+          </p>
           ${melhor.d ? `<p class="cx-nota">Melhor dia: ${formatarData(melhor.d)} com ${reais(melhor.v)}</p>` : ""}
+          ${mercadoria === 0 ? `<p class="cx-nota">Nenhum gasto de mercadoria foi lançado neste mês.</p>` : ""}
         </section>
+
         <section class="cx-cartao">
           <h3>Por forma de pagamento</h3>
-          ${FORMAS.map(f => `<div class="cx-linha"><span>${f.icone} ${f.rotulo}</span><b>${reais(a.porForma[f.chave])}</b></div>`).join("")}
+          ${FORMAS.map(f => `<div class="cx-linha"><span>${f.icone} ${f.rotulo} <i>${a.contagem[f.chave]}x</i></span><b>${reais(a.porForma[f.chave])}</b></div>`).join("")}
+          ${a.porForma.outro ? linhaValor("❓ Outros", a.porForma.outro) : ""}
+          ${linhaValor("Total recebido", a.bruto, "forte")}
         </section>
+
       </div>
+
       <table class="cx-tabela">
-        <thead><tr><th>Dia</th><th>Pedidos</th><th>Faturou</th><th>Taxas</th></tr></thead>
+        <thead><tr><th>Dia</th><th>Pedidos</th><th>Faturou</th><th>Motoboy</th><th>Mercadoria</th><th>Sobrou</th></tr></thead>
         <tbody>
           ${dias.map(d => {
             const x = apurar(porDia[d]);
-            return `<tr><td>${formatarData(d)}</td><td>${x.quantidade}</td><td>${reais(x.bruto)}</td><td>${reais(x.taxas)}</td></tr>`;
+            const g = gastoPorDia[d] || 0;
+            return `<tr>
+              <td>${formatarData(d)}</td>
+              <td>${x.quantidade}</td>
+              <td>${reais(x.bruto)}</td>
+              <td>${reais(x.taxas)}</td>
+              <td>${reais(g)}</td>
+              <td><b>${reais(x.liquido - g)}</b></td>
+            </tr>`;
           }).join("")}
         </tbody>
+        <tfoot>
+          <tr>
+            <th>Total do mês</th>
+            <th>${a.quantidade}</th>
+            <th>${reais(a.bruto)}</th>
+            <th>${reais(a.taxas)}</th>
+            <th>${reais(mercadoria)}</th>
+            <th>${reais(sobrou)}</th>
+          </tr>
+        </tfoot>
       </table>`;
   } catch (e) {
     console.error(e);
@@ -603,6 +661,17 @@ el("[data-lista]").addEventListener("click", async e => {
 async function mudarStatus(id, status) {
   try {
     await updateDoc(doc(db, "pedidos", id), { status });
+    /* quando o pedido sai para entrega, oferece avisar o cliente na hora:
+       é o momento em que ele mais quer saber */
+    if (status === "saiu") {
+      const p = achar(id);
+      if (p && p.fone) {
+        p.status = "saiu";
+        setTimeout(() => {
+          if (confirm("Avisar o cliente pelo WhatsApp que o pedido saiu para entrega?")) avisarCliente(p);
+        }, 150);
+      }
+    }
   } catch (e) {
     alert("Não consegui salvar a mudança. Verifique a internet e tente de novo.");
   }

@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/comanda.css?v=16" />
-<link rel="stylesheet" href="assets/css/painel.css?v=16" />
+<link rel="stylesheet" href="assets/css/comanda.css?v=17" />
+<link rel="stylesheet" href="assets/css/painel.css?v=17" />
 </head>
 <body>
 
@@ -72,48 +72,97 @@
 
   <section class="caixa" data-caixa hidden></section>
 
-  <section class="balcao envolve" data-balcao hidden>
+  <section class="balcao" data-balcao hidden>
 
-    <div class="bloco">
-      <h2>Pedido que não veio do site</h2>
-      <p class="ajuda">Para o cliente que chegou no balcão, ligou, ou mandou o pedido escrito no WhatsApp. Cole o texto ou escreva o pedido aqui.</p>
-      <textarea data-entrada placeholder="Ex.: 2x X-Tudo, 1 Coca 2L — cliente João, retirada, pix"></textarea>
-      <div class="botoes">
-        <button type="button" class="principal" data-colar>Colar do WhatsApp</button>
-        <button type="button" data-limpar>Limpar</button>
-      </div>
-      <p class="aviso" data-aviso hidden></p>
-    </div>
+    <!-- abas: várias comandas abertas ao mesmo tempo -->
+    <div class="cmd-abas" data-abas></div>
 
-    <div class="bloco">
-      <h2>Como vai sair no papel</h2>
-      <div class="area-papel">
-        <div class="papel" data-papel></div>
+    <div class="cmd-area">
+
+      <!-- lado esquerdo: o cardápio para clicar -->
+      <div class="cmd-cardapio">
+        <div class="cmd-busca">
+          <input type="search" data-busca placeholder="Procurar lanche, bebida, porção…" autocomplete="off" />
+        </div>
+        <div class="cmd-grupos" data-grupos></div>
+        <div class="cmd-itens" data-itens></div>
+        <button type="button" class="cmd-avulso" data-avulso>+ Item que não está na lista</button>
       </div>
 
-      <div class="campos">
-        <label class="campo">
-          <span>Taxa de entrega</span>
-          <input type="text" inputmode="decimal" data-taxa placeholder="ex.: 5,00" />
-        </label>
-        <label class="marca">
-          <input type="checkbox" data-semacento />
-          Tirar acentos na impressão direta
-        </label>
+      <!-- lado direito: a comanda sendo montada -->
+      <div class="cmd-pedido">
+
+        <div class="cmd-linhas" data-linhas></div>
+
+        <div class="cmd-campos">
+          <label class="campo"><span>Nome do cliente</span>
+            <input type="text" data-cliente placeholder="Ex.: João" /></label>
+
+          <label class="campo"><span>WhatsApp (opcional)</span>
+            <input type="tel" inputmode="numeric" data-fone placeholder="11 90000-0000" /></label>
+
+          <div class="campo">
+            <span>Como vai receber</span>
+            <div class="cmd-tipos" data-tipos>
+              <button type="button" data-tipo="Retirada no balcão" class="ativo">🏠 Balcão</button>
+              <button type="button" data-tipo="Mesa">🪑 Mesa</button>
+              <button type="button" data-tipo="Entrega">🛵 Entrega</button>
+            </div>
+          </div>
+
+          <label class="campo" data-campo-mesa hidden><span>Número da mesa</span>
+            <input type="text" inputmode="numeric" data-mesa placeholder="Ex.: 3" /></label>
+
+          <label class="campo" data-campo-endereco hidden><span>Endereço da entrega</span>
+            <input type="text" data-endereco placeholder="Rua, número, bairro" /></label>
+
+          <label class="campo" data-campo-taxa hidden><span>Taxa de entrega</span>
+            <input type="text" inputmode="decimal" data-taxa-comanda placeholder="5,00" /></label>
+
+          <div class="campo">
+            <span>Forma de pagamento</span>
+            <div class="cmd-pagto" data-pagto>
+              <button type="button" data-forma="Dinheiro">💵 Dinheiro</button>
+              <button type="button" data-forma="Pix">⚡ Pix</button>
+              <button type="button" data-forma="Cartão de débito">💳 Débito</button>
+              <button type="button" data-forma="Cartão de crédito">💳 Crédito</button>
+            </div>
+          </div>
+
+          <label class="campo" data-campo-troco hidden><span>Cliente vai pagar com quanto?</span>
+            <input type="text" inputmode="decimal" data-recebido placeholder="Ex.: 50,00" /></label>
+
+          <label class="campo"><span>Observação do pedido</span>
+            <input type="text" data-obs placeholder="Ex.: sem cebola, tocar o interfone" /></label>
+        </div>
+
+        <div class="cmd-totais" data-totais></div>
+
+        <div class="cmd-botoes">
+          <button type="button" class="principal larga" data-imprimir>🖨️ Imprimir comanda</button>
+          <button type="button" data-direto>Imprimir direto (RawBT)</button>
+          <button type="button" data-gaveta>Abrir gaveta</button>
+          <button type="button" class="cmd-fechar" data-fechar-comanda>✓ Fechar esta comanda</button>
+        </div>
+        <p class="aviso" data-aviso hidden></p>
+
+        <details class="cmd-colar">
+          <summary>Colar pedido escrito do WhatsApp</summary>
+          <textarea data-entrada placeholder="Cole aqui o texto do pedido que chegou pelo WhatsApp"></textarea>
+          <div class="botoes">
+            <button type="button" data-colar>Colar da área de transferência</button>
+            <button type="button" data-ler>Transformar em comanda</button>
+          </div>
+        </details>
       </div>
 
-      <div class="botoes" data-acoes hidden>
-        <button type="button" class="principal larga" data-imprimir>🖨️ Imprimir comanda</button>
-        <button type="button" data-direto>Imprimir direto (RawBT)</button>
-        <button type="button" data-gaveta>Abrir gaveta</button>
+      <!-- a folha que vai para a impressora -->
+      <div class="cmd-folha">
+        <h2>Como vai sair no papel</h2>
+        <div class="area-papel"><div class="papel" data-papel></div></div>
+        <label class="marca"><input type="checkbox" data-semacento /> Tirar acentos na impressão direta</label>
       </div>
-    </div>
 
-    <div class="bloco">
-      <h2>Últimas comandas de hoje</h2>
-      <p class="ajuda">Toque em uma para imprimir de novo.</p>
-      <p class="ajuda" data-historico-vazio>Nenhuma comanda impressa ainda.</p>
-      <ul class="lista-comandas" data-historico></ul>
     </div>
 
     <details class="guia">
@@ -141,9 +190,10 @@
 
 </div>
 
-<script src="assets/js/comanda-core.js?v=16"></script>
-<script src="assets/js/caixa.js?v=16"></script>
-<script src="assets/js/comanda.js?v=16"></script>
-<script type="module" src="assets/js/painel.js?v=16"></script>
+<script src="assets/js/comanda-core.js?v=17"></script>
+<script src="assets/js/caixa.js?v=17"></script>
+<script src="assets/js/cardapio.js?v=17"></script>
+<script src="assets/js/balcao.js?v=17"></script>
+<script type="module" src="assets/js/painel.js?v=17"></script>
 </body>
 </html>

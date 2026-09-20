@@ -37,7 +37,7 @@ function apurar(pedidos) {
     recusados: pedidos.length - valem.length,
     bruto: 0,          // tudo que o cliente pagou
     taxas: 0,          // parte do motoboy
-    liquido: 0,        // venda da cozinha, sem a taxa
+    liquido: 0,        // venda da comanda, sem a taxa
     porForma: { dinheiro: 0, pix: 0, cartao: 0, outro: 0 },
     contagem: { dinheiro: 0, pix: 0, cartao: 0, outro: 0 }
   };

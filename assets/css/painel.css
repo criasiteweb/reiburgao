@@ -285,3 +285,15 @@
 /* o papel fica escondido, menos quando a aba Balcão está aberta */
 body.ver-papel .papel{position:static;left:auto;margin:0 auto}
 .pedido .t-mesa{color:#FFD34D}
+
+
+/* ---------- relatório do mês ---------- */
+.cx-cartao.destaque-mes{ border-color: rgba(255,194,14,.45); }
+.cx-tabela tfoot th{
+  background: rgba(255,194,14,.12);
+  color: #FFC20E;
+  font-weight: 800;
+  border-top: 2px solid rgba(255,194,14,.4);
+}
+.cx-tabela tbody td b{ color: #EDEAE2; }
+.cx-linha i{ opacity: .6; font-style: normal; font-size: .85em; }
