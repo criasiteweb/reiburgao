@@ -2,88 +2,23 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="color-scheme" content="dark" />
-<meta name="theme-color" content="#0E0E10" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex, nofollow" />
-<title>Modo Loja — Comandas | Rei Burgão</title>
+<title>Comandas | Rei Burgão</title>
 <link rel="icon" href="assets/img/favicon.png" type="image/png" />
-<link rel="apple-touch-icon" href="assets/img/logo.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/comanda.css?v=12" />
+<!-- A comanda agora é a aba "Balcão" dentro do painel: um link só para a loja. -->
+<meta http-equiv="refresh" content="0; url=painel.html" />
+<style>
+  body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#0E0E10;
+       color:#EDEAE2;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px;text-align:center}
+  a{color:#FFC20E}
+</style>
 </head>
 <body>
-
-<header class="topo">
-  <img src="assets/img/logo.png" alt="" width="38" height="38" />
-  <span>
-    <small>Modo loja</small>
-    <strong>Comandas</strong>
-  </span>
-  <a class="sair" href="index.html">Ver o site</a>
-</header>
-
-<div class="envolve">
-
-  <section class="bloco">
-    <h2>1. Pedido que chegou</h2>
-    <p class="ajuda">No WhatsApp, segure em cima da mensagem do pedido, toque em <strong>Copiar</strong>, e volte aqui.</p>
-    <textarea data-entrada placeholder="Cole aqui o pedido do WhatsApp…" aria-label="Pedido recebido"></textarea>
-    <div class="botoes">
-      <button type="button" class="principal" data-colar>Colar pedido</button>
-      <button type="button" data-limpar>Limpar</button>
-    </div>
-    <p class="aviso" data-aviso hidden></p>
-  </section>
-
-  <section class="bloco">
-    <h2>2. Comanda</h2>
-    <p class="ajuda">É exatamente isso que sai na impressora.</p>
-
-    <div class="area-papel">
-      <div class="papel" data-papel></div>
-    </div>
-
-    <div class="campos">
-      <label class="campo">
-        <span>Taxa de entrega</span>
-        <input type="text" inputmode="decimal" data-taxa placeholder="ex.: 5,00" />
-      </label>
-      <label class="marca">
-        <input type="checkbox" data-semacento />
-        Tirar acentos na impressão direta
-      </label>
-    </div>
-
-    <div class="botoes" data-acoes hidden>
-      <button type="button" class="principal larga" data-imprimir>🖨️ Imprimir comanda</button>
-      <button type="button" data-direto>Imprimir direto (RawBT)</button>
-      <button type="button" data-gaveta>Abrir gaveta</button>
-    </div>
-  </section>
-
-  <section class="bloco">
-    <h2>3. Últimas comandas de hoje</h2>
-    <p class="ajuda">Toque em uma para imprimir de novo.</p>
-    <p class="ajuda" data-historico-vazio>Nenhuma comanda impressa ainda.</p>
-    <ul class="lista" data-historico></ul>
-  </section>
-
-  <details class="guia">
-    <summary>Como deixar a impressora pronta</summary>
-    <ol>
-      <li><strong>No celular Android</strong> (o mais comum no balcão): instale o aplicativo <strong>RawBT</strong> na Play Store. Abra, ligue o Bluetooth, pareie a impressora <strong>GS-T80EBT</strong> e escolha ela dentro do RawBT. Em <em>Largura do papel</em>, deixe <strong>80mm / 48 colunas</strong>.</li>
-      <li><strong>No computador</strong>: ligue a impressora pelo cabo USB e instale o driver que veio com ela. Depois é só usar o botão “Imprimir comanda”, escolher a GS-T80EBT e mandar.</li>
-      <li><strong>Gaveta de dinheiro</strong>: o cabo da gaveta entra na saída própria atrás da impressora (a que parece entrada de telefone). Dentro do RawBT dá para marcar “abrir a gaveta ao imprimir”, aí ela abre sozinha em cada comanda.</li>
-      <li><strong>Atalho na tela</strong>: com esta página aberta no Chrome, toque nos três pontinhos e em <strong>Adicionar à tela inicial</strong>. Ela vira um ícone e abre direto.</li>
-    </ol>
-  </details>
-
-</div>
-
-<script src="assets/js/comanda-core.js?v=12"></script>
-<script src="assets/js/comanda.js?v=12"></script>
+  <p>
+    A comanda agora fica dentro do painel, na aba <strong>Balcão</strong>.<br /><br />
+    <a href="painel.html">Abrir o painel →</a>
+  </p>
+  <script>location.replace("painel.html");</script>
 </body>
 </html>
