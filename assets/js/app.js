@@ -204,9 +204,10 @@ function montarCardapio() {
 
   filtros.innerHTML =
     `<button type="button" role="tab" aria-selected="true" data-f="todos">Tudo</button>` +
-    GRUPOS.map(g => `<button type="button" role="tab" aria-selected="false" data-f="${g.id}">${g.rotulo}</button>`).join("");
+    GRUPOS.filter(g => g.id !== "combos")
+      .map(g => `<button type="button" role="tab" aria-selected="false" data-f="${g.id}">${g.rotulo}</button>`).join("");
 
-  alvo.innerHTML = GRUPOS.map(g => {
+  alvo.innerHTML = GRUPOS.filter(g => g.id !== "combos").map(g => {
     const itens = CARDAPIO.filter(i => i.g === g.id);
     return `
       <div class="grupo" data-grupo="${g.id}">
@@ -586,6 +587,43 @@ function aplicarBairro(nome) {
   atualizarTaxa();
 }
 
+
+/* =========================================================
+   Vitrine dos combos — promoção à parte, fora do cardápio
+   ========================================================= */
+function montarCombos() {
+  const alvo = $("[data-vitrine-combos]");
+  if (!alvo) return;
+  const combos = CARDAPIO.filter(i => i.g === "combos");
+  const menor = Math.min(...combos.map(c => c.p));
+
+  alvo.innerHTML = combos.map(c => {
+    /* quanto sai cada lanche dentro do combo, para mostrar a vantagem */
+    const porLanche = c.p / c.escolhas;
+    const linha = c.n.split("—");
+    return `
+      <button class="combo-card" type="button" data-item="${c.id}">
+        <span class="combo-foto">
+          <img src="assets/img/fotos/${c.f}.jpg" alt="${c.n}" loading="lazy" decoding="async" width="560" height="420" />
+          <span class="combo-selo">${c.escolhas} lanches</span>
+        </span>
+        <span class="combo-corpo">
+          <span class="combo-tipo">${linha[0].replace("Combo", "").trim()}</span>
+          <span class="combo-nome">${c.escolhas} lanches na caixa</span>
+          <span class="combo-inclui">+ fritas · nuggets · anel de cebola · molho · refrigerante</span>
+          <span class="combo-rodape">
+            <span class="combo-preco">${reais(c.p)}</span>
+            <span class="combo-unit">${reais(porLanche)} por lanche</span>
+          </span>
+          <span class="combo-botao">Escolher os lanches</span>
+        </span>
+      </button>`;
+  }).join("");
+
+  const apartir = $("[data-combo-apartir]");
+  if (apartir) apartir.textContent = reais(menor);
+}
+
 function montarEntrega() {
   const selCidade = $("[data-cidade]");
   const selBairro = $("[data-bairro]");
@@ -851,10 +889,10 @@ document.addEventListener("DOMContentLoaded", () => {
   $("[data-fechar-carrinho]").addEventListener("click", () => abrirCarrinho(false));
   $("[data-veu]").addEventListener("click", () => abrirCarrinho(false));
 
-  $("[data-ir-combos]").addEventListener("click", () => {
-    const b = $('[data-filtros] [data-f="combos"]');
-    b.click();
-    $("#cardapio").scrollIntoView({ behavior: "smooth", block: "start" });
+  montarCombos();
+  $("[data-vitrine-combos]").addEventListener("click", e => {
+    const b = e.target.closest("[data-item]");
+    if (b) abrirModal(b.dataset.item);
   });
 
   $("[data-itens]").addEventListener("click", e => {
