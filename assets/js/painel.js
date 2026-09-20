@@ -484,9 +484,6 @@ let seletorAberto = false;
 function barraDeMeses(selecionado) {
   const sel = String(selecionado || hojeISO());
   const [anoSel, mesSel] = sel.split("-").map(Number);
-  const hoje = new Date();
-  const anoHoje = hoje.getFullYear(), mesHoje = hoje.getMonth() + 1;
-
   const rotulo = `${NOMES_MES[mesSel - 1]} de ${anoSel}`;
 
   if (!seletorAberto) {
@@ -495,12 +492,13 @@ function barraDeMeses(selecionado) {
     </div>`;
   }
 
+  /* Sem trava de ano nem de mês: ele pode consultar qualquer período, para
+     trás ou para a frente, e o sistema não precisa de manutenção com o tempo. */
   const grade = NOMES_MES.map((nome, i) => {
     const m = i + 1;
-    const futuro = anoDoSeletor > anoHoje || (anoDoSeletor === anoHoje && m > mesHoje);
     const ativo = anoDoSeletor === anoSel && m === mesSel;
     const iso = `${anoDoSeletor}-${String(m).padStart(2, "0")}-01`;
-    return `<button type="button" data-mes="${iso}" class="${ativo ? "ativo" : ""}" ${futuro ? "disabled" : ""}>${nome.slice(0, 3)}</button>`;
+    return `<button type="button" data-mes="${iso}" class="${ativo ? "ativo" : ""}">${nome.slice(0, 3)}</button>`;
   }).join("");
 
   return `<div class="cx-meses">
@@ -509,7 +507,7 @@ function barraDeMeses(selecionado) {
       <div class="cx-cal-ano">
         <button type="button" data-ano="${anoDoSeletor - 1}" aria-label="Ano anterior">‹</button>
         <b>${anoDoSeletor}</b>
-        <button type="button" data-ano="${anoDoSeletor + 1}" ${anoDoSeletor >= anoHoje ? "disabled" : ""} aria-label="Próximo ano">›</button>
+        <button type="button" data-ano="${anoDoSeletor + 1}" aria-label="Próximo ano">›</button>
       </div>
       <div class="cx-cal-grade">${grade}</div>
     </div>

@@ -35,6 +35,15 @@
 }
 @keyframes pulsa{50%{transform:scale(1.14)}}
 
+/* botões do topo: discretos, só o necessário */
+.topo .sair{
+  flex:0 0 auto;padding:6px 11px;border-radius:9px;cursor:pointer;
+  font:600 12px/1.2 "Inter",sans-serif;letter-spacing:0;
+  background:transparent;color:var(--texto-suave);
+  border:1px solid var(--linha);
+}
+.topo .sair:hover{color:var(--texto);border-color:var(--texto-suave)}
+
 .conexao{font-size:12.5px;padding:5px 11px;border-radius:999px;white-space:nowrap}
 .conexao[data-ok="sim"]{color:var(--verde);background:rgba(47,169,107,.12)}
 .conexao[data-ok="nao"]{color:#FF8D82;background:rgba(216,38,28,.14)}
