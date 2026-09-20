@@ -247,7 +247,6 @@ function comandaTexto(p, num, semAcentos) {
 
   L.push(barra);
   L.push(centro("Pedido feito pelo site"));
-  L.push(centro(LOJA.fone));
   L.push(barra);
 
   const txt = L.join("\n");
@@ -305,7 +304,7 @@ function comandaHTML(p, num) {
     ${troco ? dado("Recebe", reais(troco.levou)) : ""}
     ${troco ? `<div class="dado troco"><i>Troco</i><span>${reais(troco.volta)}</span></div>` : ""}
 
-    <div class="rodape">Pedido feito pelo site<br />${LOJA.fone}</div>`;
+    <div class="rodape">Pedido feito pelo site</div>`;
 }
 
 /* ========================= impressão ========================= */
