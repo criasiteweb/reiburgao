@@ -682,14 +682,16 @@ async function mudarStatus(id, status) {
 /* ========================= avisar o cliente ========================= */
 /* Abre o WhatsApp do cliente com a mensagem já escrita, conforme a etapa.
    É um toque do atendente — nada é enviado sozinho. */
+/* Sem emojis de propósito: no aparelho do cliente eles chegavam como
+   quadradinho, o que passa impressão de mensagem quebrada. Acentos normais. */
 const RECADOS = {
-  novo: p => `Oi ${primeiroNome(p)}! 👑 Recebemos seu pedido *#${p.numero}* aqui no Rei Burgão. Já vamos preparar!`,
-  preparando: p => `Oi ${primeiroNome(p)}! 👑 Seu pedido *#${p.numero}* já está sendo preparado. ⏱️ Fica pronto em cerca de 40 minutos.`,
+  novo: p => `Oi ${primeiroNome(p)}! Recebemos seu pedido *#${p.numero}* aqui no Rei Burgão. Já vamos preparar!`,
+  preparando: p => `Oi ${primeiroNome(p)}! Seu pedido *#${p.numero}* já está sendo preparado. Fica pronto em cerca de 40 minutos.`,
   saiu: p => /entrega/i.test(p.tipo || "")
-    ? `Oi ${primeiroNome(p)}! 🛵 Seu pedido *#${p.numero}* saiu para entrega e chega em instantes. Bom apetite!`
-    : `Oi ${primeiroNome(p)}! 🍔 Seu pedido *#${p.numero}* está pronto para retirada. Te esperamos!`,
-  concluido: p => `Oi ${primeiroNome(p)}! Obrigado pela preferência 👑 Qualquer coisa é só chamar. Bom apetite!`,
-  recusado: p => `Oi ${primeiroNome(p)}! Infelizmente não vamos conseguir atender seu pedido *#${p.numero}* agora. Desculpe pelo transtorno! 🙏`
+    ? `Oi ${primeiroNome(p)}! Seu pedido *#${p.numero}* saiu para entrega e chega em instantes. Bom apetite!`
+    : `Oi ${primeiroNome(p)}! Seu pedido *#${p.numero}* está pronto para retirada. Te esperamos!`,
+  concluido: p => `Oi ${primeiroNome(p)}! Obrigado pela preferência. Qualquer coisa é só chamar. Bom apetite!`,
+  recusado: p => `Oi ${primeiroNome(p)}! Infelizmente não vamos conseguir atender seu pedido *#${p.numero}* agora. Desculpe pelo transtorno!`
 };
 
 function primeiroNome(p) {
