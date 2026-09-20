@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/estilo.css?v=14" />
+<link rel="stylesheet" href="assets/css/estilo.css?v=15" />
 </head>
 <body>
 <div class="barra-progresso" aria-hidden="true"><i></i></div>
@@ -208,7 +208,15 @@
           <legend>Como você quer receber?</legend>
           <label class="radio"><input type="radio" name="tipo" value="Entrega" checked /><span>🛵 Entrega</span></label>
           <label class="radio"><input type="radio" name="tipo" value="Retirada no balcão" /><span>🏠 Retirada</span></label>
+          <label class="radio"><input type="radio" name="tipo" value="Mesa" /><span>🪑 Na mesa</span></label>
         </fieldset>
+        <div class="caixa-mesa" data-caixa-mesa hidden>
+          <b>Você está na lanchonete</b>
+          <span>Diga o número da mesa para levarmos seu pedido até você.</span>
+          <label>Número da mesa
+            <input name="mesa" type="text" inputmode="numeric" placeholder="Ex.: 4" maxlength="3" />
+          </label>
+        </div>
         <div class="caixa-retirada" data-caixa-retirada hidden>
           <b>Retirar no balcão</b>
           <span>R. Eunice Cerqueira Innocencio, 245<br />Jd. Quaresmeira · Suzano — SP</span>
@@ -294,7 +302,7 @@
   </div>
 </div>
 
-<script src="assets/js/app.js?v=14"></script>
-<script type="module" src="assets/js/envio.js?v=14"></script>
+<script src="assets/js/app.js?v=15"></script>
+<script type="module" src="assets/js/envio.js?v=15"></script>
 </body>
 </html>
