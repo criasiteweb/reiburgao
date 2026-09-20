@@ -284,3 +284,4 @@
 
 /* o papel fica escondido, menos quando a aba Balcão está aberta */
 body.ver-papel .papel{position:static;left:auto;margin:0 auto}
+.pedido .t-mesa{color:#FFD34D}
