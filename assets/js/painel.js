@@ -30,11 +30,11 @@ const el = (s, r = document) => r.querySelector(s);
 const els = (s, r = document) => [...r.querySelectorAll(s)];
 
 const ETAPAS = {
-  novo:       { rotulo: "Novo",        proxima: "preparando", acao: "✅ Aceitar e imprimir", avisar: "📲 Avisar que recebemos" },
-  preparando: { rotulo: "Preparando",  proxima: "saiu",       acao: "🛵 Saiu para entrega",  avisar: "📲 Avisar que está pronto em 40min" },
-  saiu:       { rotulo: "A caminho",   proxima: "concluido",  acao: "Concluir",              avisar: "📲 Avisar que SAIU para entrega" },
-  concluido:  { rotulo: "Concluído",   proxima: null,         acao: null, reabre: true,      avisar: "📲 Agradecer" },
-  recusado:   { rotulo: "Recusado",    proxima: null,         acao: null, reabre: true,      avisar: "📲 Avisar que não dá" }
+  novo:       { rotulo: "Novo",        proxima: "preparando", acao: "Aceitar e imprimir", avisar: "Avisar que recebemos" },
+  preparando: { rotulo: "Preparando",  proxima: "saiu",       acao: "Saiu para entrega",  avisar: "Avisar que está pronto" },
+  saiu:       { rotulo: "A caminho",   proxima: "concluido",  acao: "Concluir",              avisar: "Avisar que saiu para entrega" },
+  concluido:  { rotulo: "Concluído",   proxima: null,         acao: null, reabre: true,      avisar: "Agradecer" },
+  recusado:   { rotulo: "Recusado",    proxima: null,         acao: null, reabre: true,      avisar: "Avisar que não dá" }
 };
 
 let pedidos = [];          // os do dia que está na tela, mais novos primeiro
@@ -261,12 +261,17 @@ function esc(s) {
 }
 
 function resumoItens(p) {
+  /* pedido do site vem como texto; comanda do balcão já vem com a lista pronta */
+  if (Array.isArray(p.itens) && p.itens.length) {
+    return p.itens.map(i => `${i.q}x ${esc(i.nome)}`).join(" · ");
+  }
   const lido = p.texto ? lerPedido(p.texto) : null;
   if (!lido || !lido.itens.length) return "";
   return lido.itens.map(i => `${i.q}x ${esc(i.nome)}`).join(" · ");
 }
 
 function cartao(p) {
+  if (p.balcao) return cartaoBalcao(p);
   const etapa = ETAPAS[p.status] || ETAPAS.novo;
   const entrega = /entrega/i.test(p.tipo || "");
   const noLocal = /restaurante|mesa/i.test(p.tipo || "");
@@ -281,7 +286,7 @@ function cartao(p) {
     <div class="quem">
       <strong>${esc(p.cliente) || "Sem nome"}</strong>
       <span class="tipo ${entrega ? "t-entrega" : noLocal ? "t-mesa" : "t-retirada"}">${
-        entrega ? "🛵 Entrega" : noLocal ? "🍽️ No restaurante" : "🏠 Retirada"
+        entrega ? "Entrega" : noLocal ? "No restaurante" : "Retirada"
       }</span>
     </div>
 
@@ -289,19 +294,50 @@ function cartao(p) {
     ${entrega && p.endereco ? `<p class="endereco">${esc(p.endereco)}</p>` : ""}
 
     <p class="itens">${resumoItens(p)}</p>
-    ${p.pagamento ? `<p class="pagto">💳 ${esc(p.pagamento)}</p>` : ""}
+    ${p.pagamento ? `<p class="pagto">${esc(p.pagamento)}</p>` : ""}
 
     <div class="rodape">
       <span class="total">${reais(p.total || 0)}</span>
-      ${p.impresso ? `<span class="jaimpresso">✓ impresso</span>` : ""}
+      ${p.impresso ? `<span class="jaimpresso">impresso</span>` : ""}
     </div>
 
     <div class="acoes">
-      <button type="button" class="principal" data-imprimir="${esc(p.id)}">🖨️ Imprimir</button>
+      <button type="button" class="principal" data-imprimir="${esc(p.id)}">Imprimir</button>
       ${etapa.proxima ? `<button type="button" data-avancar="${esc(p.id)}">${esc(etapa.acao)}</button>` : ""}
       ${p.status === "novo" ? `<button type="button" class="recusar" data-recusar="${esc(p.id)}">Recusar</button>` : ""}
-      ${p.fone ? `<button type="button" class="avisar" data-avisar="${esc(p.id)}">${esc(etapa.avisar || "📲 Avisar cliente")}</button>` : ""}
-      ${etapa.reabre ? `<button type="button" class="reabrir" data-reabrir="${esc(p.id)}">↩︎ Reabrir pedido</button>` : ""}
+      ${p.fone ? `<button type="button" class="avisar" data-avisar="${esc(p.id)}">${esc(etapa.avisar || "Avisar cliente")}</button>` : ""}
+      ${etapa.reabre ? `<button type="button" class="reabrir" data-reabrir="${esc(p.id)}">Reabrir pedido</button>` : ""}
+    </div>
+  </article>`;
+}
+
+/* cartão de uma comanda fechada no balcão: é registro de venda, não pedido
+   em andamento — por isso só mostra o que foi vendido e como foi pago */
+function cartaoBalcao(v) {
+  const entrega = /entrega/i.test(v.tipo || "");
+  const noLocal = /restaurante|mesa/i.test(v.tipo || "");
+  return `
+  <article class="pedido do-balcao" data-status="concluido" data-id="${esc(v.id)}">
+    <header>
+      <span class="num">#${esc(v.numero)}</span>
+      <span class="etapa e-balcao">Balcão</span>
+      <span class="hora">${esc(v.hora || "")}</span>
+    </header>
+
+    <div class="quem">
+      <strong>${esc(v.cliente) || "Sem nome"}</strong>
+      <span class="tipo ${entrega ? "t-entrega" : noLocal ? "t-mesa" : "t-retirada"}">${
+        entrega ? "Entrega" : noLocal ? "No restaurante" : "Retirada"
+      }</span>
+    </div>
+
+    ${entrega && v.endereco ? `<p class="endereco">${esc(v.endereco)}</p>` : ""}
+    <p class="itens">${resumoItens(v)}</p>
+    ${v.forma || v.pagamento ? `<p class="pagto">${esc(v.forma || v.pagamento)}</p>` : ""}
+
+    <div class="rodape">
+      <span class="total">${reais(v.total || 0)}</span>
+      <span class="jaimpresso">lançada no caixa</span>
     </div>
   </article>`;
 }
@@ -314,7 +350,7 @@ function desenhar() {
   el("[data-balcao]").hidden = !noBalcao;
   document.body.classList.toggle("ver-papel", noBalcao);
   lista.hidden = noCaixa || noBalcao;
-  el("[data-resumo]").hidden = noCaixa || noBalcao || !pedidos.length;
+  el("[data-resumo]").hidden = noCaixa || noBalcao || !(pedidos.length || (caixaDoDia.comandas || []).length);
 
   if (noBalcao) {
     els("[data-filtro]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filtro === filtro)));
@@ -328,7 +364,12 @@ function desenhar() {
     return;
   }
   const abertos = p => !["concluido", "recusado"].includes(p.status);
-  const visiveis = filtro === "abertos" ? pedidos.filter(abertos) : pedidos;
+  /* as comandas fechadas no balcão são vendas do dia como as outras:
+     aparecem em "Todos de hoje" e no histórico, nunca em "Em aberto" */
+  const doBalcao = (caixaDoDia.comandas || []).map(v =>
+    Object.assign({}, v, { id: v.id, balcao: true, status: v.status || "concluido" }));
+  const todosDoDia = pedidos.concat(doBalcao);
+  const visiveis = filtro === "abertos" ? pedidos.filter(abertos) : todosDoDia;
 
   el("[data-contador]").textContent =
     filtro === "historico" ? "" : (pedidos.filter(p => p.status === "novo").length || "");
@@ -340,7 +381,7 @@ function desenhar() {
   if (!visiveis.length) {
     lista.innerHTML =
       filtro === "abertos"
-        ? `<p class="vazio">Nenhum pedido em aberto. Quando chegar um novo, o computador vai apitar. 🔔</p>`
+        ? `<p class="vazio">Nenhum pedido em aberto. Quando chegar um novo, o computador vai apitar.</p>`
         : filtro === "historico"
           ? `<p class="vazio">Nenhum pedido em ${formatarData(dataHistorico)}.</p>`
           : `<p class="vazio">Nenhum pedido hoje ainda.</p>`;
@@ -352,10 +393,12 @@ function desenhar() {
 /* faturamento e contagem do dia que está na tela */
 function resumoDoDia() {
   const caixa = el("[data-resumo]");
-  const valem = pedidos.filter(p => p.status !== "recusado");
-  if (!pedidos.length) { caixa.hidden = true; return; }
+  const doBalcao = caixaDoDia.comandas || [];
+  const tudo = pedidos.concat(doBalcao);
+  const valem = tudo.filter(p => p.status !== "recusado");
+  if (!tudo.length) { caixa.hidden = true; return; }
   const soma = valem.reduce((t, p) => t + (Number(p.total) || 0), 0);
-  const recusados = pedidos.length - valem.length;
+  const recusados = tudo.length - valem.length;
   caixa.hidden = false;
   caixa.innerHTML = `
     <span><b>${valem.length}</b> ${valem.length === 1 ? "pedido" : "pedidos"}</span>
@@ -424,10 +467,10 @@ function desenharCaixa() {
         <h3>Entrou por forma de pagamento</h3>
         ${FORMAS.map(f => `
           <div class="cx-linha">
-            <span>${f.icone} ${f.rotulo} <i>${a.contagem[f.chave]}x</i></span>
+            <span>${f.rotulo} <i>${a.contagem[f.chave]}x</i></span>
             <b>${reais(a.porForma[f.chave])}</b>
           </div>`).join("")}
-        ${a.porForma.outro ? linhaValor("❓ Outros", a.porForma.outro) : ""}
+        ${a.porForma.outro ? linhaValor("Outros", a.porForma.outro) : ""}
         ${linhaValor("Total recebido", a.bruto, "forte")}
       </section>
 
@@ -465,7 +508,7 @@ function desenharCaixa() {
       ${caixaDoDia.fechado
         ? `<button type="button" class="cx-reabrir" data-reabrir-caixa>Reabrir o caixa</button>`
         : `<button type="button" class="principal larga" data-fechar-caixa>Fechar o caixa de ${dia}</button>`}
-      <button type="button" data-relatorio>📊 Relatório do mês</button>
+      <button type="button" data-relatorio>Relatório do mês</button>
     </div>
 
     <div class="cx-relatorio" data-relatorio-mes hidden></div>`;
@@ -488,7 +531,7 @@ function barraDeMeses(selecionado) {
 
   if (!seletorAberto) {
     return `<div class="cx-meses">
-      <button type="button" class="cx-mes-abre" data-abrir-meses>📅 ${rotulo} <i>▾</i></button>
+      <button type="button" class="cx-mes-abre" data-abrir-meses>${rotulo} <i>▾</i></button>
     </div>`;
   }
 
@@ -502,7 +545,7 @@ function barraDeMeses(selecionado) {
   }).join("");
 
   return `<div class="cx-meses">
-    <button type="button" class="cx-mes-abre aberto" data-abrir-meses>📅 ${rotulo} <i>▴</i></button>
+    <button type="button" class="cx-mes-abre aberto" data-abrir-meses>${rotulo} <i>▴</i></button>
     <div class="cx-calendario">
       <div class="cx-cal-ano">
         <button type="button" data-ano="${anoDoSeletor - 1}" aria-label="Ano anterior">‹</button>
@@ -590,8 +633,8 @@ async function relatorioMes(iso) {
 
         <section class="cx-cartao">
           <h3>Por forma de pagamento</h3>
-          ${FORMAS.map(f => `<div class="cx-linha"><span>${f.icone} ${f.rotulo} <i>${a.contagem[f.chave]}x</i></span><b>${reais(a.porForma[f.chave])}</b></div>`).join("")}
-          ${a.porForma.outro ? linhaValor("❓ Outros", a.porForma.outro) : ""}
+          ${FORMAS.map(f => `<div class="cx-linha"><span>${f.rotulo} <i>${a.contagem[f.chave]}x</i></span><b>${reais(a.porForma[f.chave])}</b></div>`).join("")}
+          ${a.porForma.outro ? linhaValor("Outros", a.porForma.outro) : ""}
           ${linhaValor("Total recebido", a.bruto, "forte")}
         </section>
 
@@ -752,18 +795,24 @@ window.rbComandas = {
   listar: () => (caixaDoDia.comandas || []).slice(),
 
   gravar: async (c) => {
+    /* pode acontecer de fecharem uma comanda antes do caixa terminar de
+       carregar: sem isto a gravação iria para um dia indefinido e se perderia */
+    if (!diaDoCaixa) await carregarCaixa(hojeISO());
     caixaDoDia.comandas = caixaDoDia.comandas || [];
     const i = caixaDoDia.comandas.findIndex(x => x.id === c.id);
     if (i >= 0) caixaDoDia.comandas[i] = c; else caixaDoDia.comandas.push(c);
     await gravarCaixa();
     desenharCaixa();
+    if (filtro !== "caixa" && filtro !== "balcao") desenhar();
     return true;
   },
 
   remover: async (id) => {
+    if (!diaDoCaixa) await carregarCaixa(hojeISO());
     caixaDoDia.comandas = (caixaDoDia.comandas || []).filter(x => x.id !== id);
     await gravarCaixa();
     desenharCaixa();
+    if (filtro !== "caixa" && filtro !== "balcao") desenhar();
     return true;
   }
 };
@@ -860,7 +909,7 @@ el("[data-data]").addEventListener("change", async e => {
 const botaoSom = el("[data-som]");
 function pintarSom() {
   const ligado = localStorage.getItem("rb_som") !== "nao";
-  botaoSom.textContent = ligado ? "🔔 Som ligado" : "🔕 Som desligado";
+  botaoSom.textContent = ligado ? "Som ligado" : "Som desligado";
   botaoSom.setAttribute("aria-pressed", String(ligado));
 }
 botaoSom.addEventListener("click", () => {

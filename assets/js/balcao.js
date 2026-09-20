@@ -317,8 +317,8 @@ function desenharHistoricoComandas() {
         <b>${reais(v.total || 0)}</b>
       </div>
       <div class="cmd-hist-acoes">
-        <button type="button" data-editar-comanda="${escapa(v.id)}">✎ Abrir para editar</button>
-        <button type="button" class="cmd-tira-hist" data-apagar-comanda="${escapa(v.id)}">✕ Apagar</button>
+        <button type="button" data-editar-comanda="${escapa(v.id)}">Abrir para editar</button>
+        <button type="button" class="cmd-tira-hist" data-apagar-comanda="${escapa(v.id)}">Apagar</button>
       </div>
     </div>`).join("");
 }

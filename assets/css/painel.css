@@ -55,8 +55,8 @@
 }
 .filtros{display:flex;gap:8px}
 .filtros button{
-  padding:9px 16px;border-radius:999px;border:1px solid var(--linha);
-  background:var(--giz);color:var(--texto-suave);font:600 14px/1 "Inter",sans-serif;cursor:pointer;
+  padding:7px 13px;border-radius:9px;border:1px solid var(--linha);
+  background:var(--giz);color:var(--texto-suave);font:600 12.5px/1.2 "Inter",sans-serif;cursor:pointer;
 }
 .filtros button[aria-pressed="true"]{background:var(--amarelo);color:#1a1200;border-color:var(--amarelo)}
 .ajustes{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
@@ -66,9 +66,10 @@
   border:1px solid var(--linha);border-radius:10px;font-size:15px;
 }
 .alternar{
-  padding:9px 14px;border-radius:10px;border:1px solid var(--linha);
-  background:var(--giz);color:var(--texto);font:600 13.5px/1 "Inter",sans-serif;cursor:pointer;
+  padding:7px 12px;border-radius:9px;border:1px solid var(--linha);
+  background:transparent;color:var(--texto-suave);font:600 12px/1.2 "Inter",sans-serif;cursor:pointer;
 }
+.alternar[aria-pressed="true"]{color:var(--texto);border-color:var(--texto-suave)}
 .alternar[aria-pressed="false"]{color:var(--texto-suave)}
 
 /* ---------- lista de pedidos ---------- */
@@ -306,3 +307,9 @@ body.ver-papel .papel{position:static;left:auto;margin:0 auto}
 }
 .cx-tabela tbody td b{ color: #EDEAE2; }
 .cx-linha i{ opacity: .6; font-style: normal; font-size: .85em; }
+
+
+/* ---------- comanda fechada no balcão, dentro da lista do dia ---------- */
+.pedido.do-balcao{border-color:rgba(255,194,14,.28)}
+.pedido .etapa.e-balcao{background:rgba(255,194,14,.16);color:var(--amarelo)}
+.pedido.do-balcao .jaimpresso{color:var(--texto-suave)}
