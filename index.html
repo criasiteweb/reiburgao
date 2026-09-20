@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/estilo.css?v=11" />
+<link rel="stylesheet" href="assets/css/estilo.css?v=12" />
 </head>
 <body>
 <div class="barra-progresso" aria-hidden="true"><i></i></div>
@@ -138,7 +138,17 @@
       </ul>
       <div class="onde-botoes">
         <a class="botao primario" href="https://wa.me/5511976385099?text=Ol%C3%A1%21%20Vim%20pelo%20site%20do%20Rei%20Burg%C3%A3o%20e%20quero%20fazer%20um%20pedido." target="_blank" rel="noopener">Chamar no WhatsApp</a>
-        <a class="botao contorno" href="https://www.google.com/maps/search/?api=1&query=R.+Eunice+Cerqueira+Innocencio,+245+-+Jardim+Quaresmeira,+Suzano+-+SP,+08671-330" target="_blank" rel="noopener">Como chegar</a>
+        <div class="ir-ate">
+          <span class="ir-ate-rot">Como chegar</span>
+          <div class="ir-ate-botoes">
+            <a class="botao contorno rota" href="https://www.google.com/maps/dir/?api=1&destination=-23.547023,-46.334472" target="_blank" rel="noopener">
+              <span aria-hidden="true">🗺️</span> Google Maps
+            </a>
+            <a class="botao contorno rota" href="https://www.waze.com/ul?ll=-23.547023,-46.334472&navigate=yes" target="_blank" rel="noopener">
+              <span aria-hidden="true">🚗</span> Waze
+            </a>
+          </div>
+        </div>
       </div>
     </div>
     <div class="onde-mapa" data-surge>
@@ -202,7 +212,10 @@
         <div class="caixa-retirada" data-caixa-retirada hidden>
           <b>Retirar no balcão</b>
           <span>R. Eunice Cerqueira Innocencio, 245<br />Jd. Quaresmeira · Suzano — SP</span>
-          <a href="https://www.google.com/maps/search/?api=1&query=R.+Eunice+Cerqueira+Innocencio,+245+-+Jardim+Quaresmeira,+Suzano+-+SP" target="_blank" rel="noopener">Ver no mapa</a>
+          <span class="ir-ate-botoes compacto">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=-23.547023,-46.334472" target="_blank" rel="noopener">🗺️ Google Maps</a>
+            <a href="https://www.waze.com/ul?ll=-23.547023,-46.334472&navigate=yes" target="_blank" rel="noopener">🚗 Waze</a>
+          </span>
         </div>
         <div data-campos-entrega>
           <label>CEP
@@ -252,6 +265,7 @@
       <div class="linha-total linha-taxa" data-linha-taxa hidden><span>Taxa de entrega</span><b data-taxa-valor>—</b></div>
       <div class="linha-total linha-geral" data-linha-geral hidden><span>Total</span><b data-total-geral>R$ 0,00</b></div>
       <p class="aviso-taxa" data-pendente>taxa de entrega a confirmar com a loja</p>
+      <p class="tempo-preparo" data-preparo hidden></p>
       <button class="botao primario grande" type="submit">Enviar pedido no WhatsApp</button>
       <p class="status" data-status role="status" aria-live="polite"></p>
     </div>
@@ -280,7 +294,7 @@
   </div>
 </div>
 
-<script src="assets/js/app.js?v=11"></script>
-<script type="module" src="assets/js/envio.js?v=11"></script>
+<script src="assets/js/app.js?v=12"></script>
+<script type="module" src="assets/js/envio.js?v=12"></script>
 </body>
 </html>
