@@ -236,3 +236,47 @@
 .cx-despesas li span{color:var(--texto-suave);font-size:13px;flex:0 0 auto}
 .cx-despesas li b{flex:1;text-align:right}
 .cx-form input:first-child{flex:1}
+
+/* ---------- aba Balcão (a comanda trazida para dentro do painel) ---------- */
+.balcao{max-width:640px;margin:0 auto;padding:8px 16px 60px}
+.balcao .bloco{
+  background:var(--carvao);border:1px solid var(--linha);border-radius:var(--raio-g);
+  padding:18px;margin-bottom:16px;
+}
+.balcao .bloco h2{font-size:18px;color:var(--amarelo);margin-bottom:6px}
+.balcao .ajuda{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--texto-suave)}
+.balcao textarea{
+  width:100%;min-height:120px;padding:13px;resize:vertical;
+  background:var(--giz);color:var(--texto);border:1px solid var(--linha);
+  border-radius:var(--raio);font:inherit;font-size:14.5px;
+}
+.balcao .botoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.balcao .botoes button{
+  flex:1 1 auto;padding:12px 15px;border-radius:12px;border:1px solid var(--linha);
+  background:var(--giz);color:var(--texto);font:700 14px/1 "Inter",sans-serif;cursor:pointer;
+}
+.balcao .botoes .principal{background:var(--amarelo);color:#1a1200;border-color:var(--amarelo)}
+.balcao .botoes .larga{flex:1 1 100%}
+.balcao .campos{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:14px}
+.balcao .campo span{display:block;font-size:11.5px;color:var(--texto-suave);margin-bottom:4px}
+.balcao .campo input{
+  width:110px;padding:9px 12px;background:var(--giz);color:var(--texto);
+  border:1px solid var(--linha);border-radius:10px;font-size:15px;
+}
+.balcao .marca{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--texto-suave)}
+.balcao .aviso{margin:10px 0 0;font-size:13.5px;color:#F0C95F}
+.balcao .area-papel{display:flex;justify-content:center}
+.balcao .lista-comandas{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.balcao .lista-comandas button{
+  width:100%;text-align:left;padding:11px 13px;border-radius:12px;cursor:pointer;
+  background:var(--giz);border:1px solid var(--linha);color:var(--texto);font:600 14px/1.4 "Inter",sans-serif;
+}
+.balcao .guia{
+  background:var(--carvao);border:1px solid var(--linha);border-radius:var(--raio-g);padding:16px 18px;
+}
+.balcao .guia summary{cursor:pointer;font-weight:700;font-size:14.5px}
+.balcao .guia ol{margin:12px 0 0;padding-left:20px;font-size:13.5px;line-height:1.6;color:var(--texto-suave)}
+.balcao .guia a{color:var(--amarelo)}
+
+/* o papel fica escondido, menos quando a aba Balcão está aberta */
+body.ver-papel .papel{position:static;left:auto;margin:0 auto}
