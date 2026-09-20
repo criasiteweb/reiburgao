@@ -13,6 +13,7 @@ const LOJA = {
      ANTES DE ENTREGAR, trocar de volta para: "5511976385099"  */
   whatsapp: "5511988097416",   // TESTE — número real da loja: 5511976385099
   endereco: "R. Eunice Cerqueira Innocencio, 245 — Jd. Quaresmeira, Suzano/SP",
+  preparo: "40 a 60 min",              // [CONFIRMAR com o dono] tempo médio de entrega
   abre: 18,                            // hora de abertura (Google)
   fecha: 23,                           // [CONFIRMAR] horário de fechamento
   diasFechados: [],                    // [CONFIRMAR] ex.: [1] fecha segunda (0=dom)
@@ -897,5 +898,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (soDigitos(e.target.value).length === 8) buscarCep();
   });
   montarEntrega();
+  const prep = $("[data-preparo]");
+  if (prep && LOJA.preparo) {
+    prep.hidden = false;
+    prep.textContent = `⏱️ Fica pronto em cerca de ${LOJA.preparo}`;
+  }
   form.pagamento.addEventListener("change", () => { troco.hidden = form.pagamento.value !== "Dinheiro"; });
 });
