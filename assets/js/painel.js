@@ -475,30 +475,56 @@ function desenharCaixa() {
 const NOMES_MES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
                    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
-/* Barra com os meses: os doze do ano corrente mais os do ano passado, para
-   ele poder olhar o mês passado sem precisar mexer em data nenhuma. */
+/* Seletor de mês em forma de calendário: um botão só na tela, que abre uma
+   gradezinha com os doze meses e setas para trocar de ano. Meses que ainda
+   não chegaram ficam apagados. */
+let anoDoSeletor = new Date().getFullYear();
+let seletorAberto = false;
+
 function barraDeMeses(selecionado) {
+  const sel = String(selecionado || hojeISO());
+  const [anoSel, mesSel] = sel.split("-").map(Number);
   const hoje = new Date();
-  const anoAtual = hoje.getFullYear();
-  const mesAtual = hoje.getMonth();
-  const lista = [];
-  for (let i = 0; i < 14; i++) {
-    const d = new Date(anoAtual, mesAtual - i, 1);
-    lista.push({
-      iso: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`,
-      rotulo: NOMES_MES[d.getMonth()] + (d.getFullYear() !== anoAtual ? " " + d.getFullYear() : "")
-    });
+  const anoHoje = hoje.getFullYear(), mesHoje = hoje.getMonth() + 1;
+
+  const rotulo = `${NOMES_MES[mesSel - 1]} de ${anoSel}`;
+
+  if (!seletorAberto) {
+    return `<div class="cx-meses">
+      <button type="button" class="cx-mes-abre" data-abrir-meses>📅 ${rotulo} <i>▾</i></button>
+    </div>`;
   }
-  return `<div class="cx-meses">${lista.map(m =>
-    `<button type="button" data-mes="${m.iso}" class="${m.iso.slice(0,7) === String(selecionado).slice(0,7) ? "ativo" : ""}">${m.rotulo}</button>`
-  ).join("")}</div>`;
+
+  const grade = NOMES_MES.map((nome, i) => {
+    const m = i + 1;
+    const futuro = anoDoSeletor > anoHoje || (anoDoSeletor === anoHoje && m > mesHoje);
+    const ativo = anoDoSeletor === anoSel && m === mesSel;
+    const iso = `${anoDoSeletor}-${String(m).padStart(2, "0")}-01`;
+    return `<button type="button" data-mes="${iso}" class="${ativo ? "ativo" : ""}" ${futuro ? "disabled" : ""}>${nome.slice(0, 3)}</button>`;
+  }).join("");
+
+  return `<div class="cx-meses">
+    <button type="button" class="cx-mes-abre aberto" data-abrir-meses>📅 ${rotulo} <i>▴</i></button>
+    <div class="cx-calendario">
+      <div class="cx-cal-ano">
+        <button type="button" data-ano="${anoDoSeletor - 1}" aria-label="Ano anterior">‹</button>
+        <b>${anoDoSeletor}</b>
+        <button type="button" data-ano="${anoDoSeletor + 1}" ${anoDoSeletor >= anoHoje ? "disabled" : ""} aria-label="Próximo ano">›</button>
+      </div>
+      <div class="cx-cal-grade">${grade}</div>
+    </div>
+  </div>`;
 }
+
+let mesDoRelatorio = hojeISO();
 
 async function relatorioMes(iso) {
   const alvo = el("[data-relatorio-mes]");
-  const [ano, mes] = (iso || hojeISO()).split("-");
+  mesDoRelatorio = iso || hojeISO();
+  anoDoSeletor = Number(String(mesDoRelatorio).slice(0, 4)) || anoDoSeletor;
+  const [ano, mes] = mesDoRelatorio.split("-");
   alvo.hidden = false;
-  alvo.innerHTML = barraDeMeses(iso || hojeISO()) + `<p class="vazio">Somando o mês…</p>`;
+  alvo.innerHTML = barraDeMeses(mesDoRelatorio) + `<p class="vazio">Somando o mês…</p>`;
 
   const de = new Date(+ano, +mes - 1, 1);
   const ate = new Date(+ano, +mes, 1);
@@ -544,7 +570,7 @@ async function relatorioMes(iso) {
     const sobrou = a.liquido - mercadoria;
     const diasComVenda = dias.length || 1;
 
-    alvo.innerHTML = barraDeMeses(iso || hojeISO()) + `
+    alvo.innerHTML = barraDeMeses(mesDoRelatorio) + `
       <h3>Relatório de ${de.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}</h3>
       <div class="cx-grade">
 
@@ -554,7 +580,7 @@ async function relatorioMes(iso) {
           ${linhaValor("− O motoboy ganhou", a.taxas, "menos")}
           ${linhaValor("= Venda da comanda", a.liquido)}
           ${linhaValor("− Gastou de mercadoria", mercadoria, "menos")}
-          <div class="cx-linha lucro"><span>= Sobrou limpo para vocês</span><b>${reais(sobrou)}</b></div>
+          <div class="cx-linha lucro"><span>= Líquido do mês</span><b>${reais(sobrou)}</b></div>
           <p class="cx-nota">
             ${a.quantidade} ${a.quantidade === 1 ? "pedido" : "pedidos"} em ${dias.length} ${dias.length === 1 ? "dia" : "dias"}
             · média de ${reais(a.quantidade ? a.bruto / a.quantidade : 0)} por pedido
@@ -574,7 +600,7 @@ async function relatorioMes(iso) {
       </div>
 
       <table class="cx-tabela">
-        <thead><tr><th>Dia</th><th>Pedidos</th><th>Faturou</th><th>Motoboy</th><th>Mercadoria</th><th>Sobrou</th></tr></thead>
+        <thead><tr><th>Dia</th><th>Pedidos</th><th>Faturou</th><th>Motoboy</th><th>Mercadoria</th><th>Líquido</th></tr></thead>
         <tbody>
           ${dias.map(d => {
             const x = apurar(porDia[d]);
@@ -602,7 +628,7 @@ async function relatorioMes(iso) {
       </table>`;
   } catch (e) {
     console.error(e);
-    alvo.innerHTML = barraDeMeses(iso || hojeISO()) + `<p class="vazio">Não consegui montar o relatório. Verifique a internet.</p>`;
+    alvo.innerHTML = barraDeMeses(mesDoRelatorio) + `<p class="vazio">Não consegui montar o relatório. Verifique a internet.</p>`;
   }
 }
 
@@ -622,8 +648,16 @@ document.addEventListener("click", async e => {
   }
   if (e.target.closest("[data-relatorio]")) { relatorioMes(diaDoCaixa); return; }
 
+  if (e.target.closest("[data-abrir-meses]")) {
+    seletorAberto = !seletorAberto;
+    relatorioMes(mesDoRelatorio); return;
+  }
+
+  const ba = e.target.closest("[data-ano]");
+  if (ba) { anoDoSeletor = Number(ba.dataset.ano); relatorioMes(mesDoRelatorio); return; }
+
   const bm = e.target.closest("[data-mes]");
-  if (bm) { relatorioMes(bm.dataset.mes); return; }
+  if (bm) { seletorAberto = false; relatorioMes(bm.dataset.mes); return; }
 
   const apaga = e.target.closest("[data-apaga-despesa]");
   if (apaga) {

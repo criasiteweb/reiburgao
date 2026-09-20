@@ -338,8 +338,34 @@ details.guia strong{color:var(--texto)}
 
 /* ---- botões de mês no relatório ---- */
 .cx-meses{ display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
-.cx-meses button{
-  padding: 7px 12px; border-radius: 999px; cursor: pointer; font-size: .8rem;
-  background: #1C1C21; color: #EDEAE2; border: 1px solid rgba(237,234,226,.14);
+
+/* ---- seletor de mês em forma de calendário ---- */
+.cx-meses{ display: grid; gap: 8px; justify-items: start; margin: 10px 0 14px; }
+.cx-mes-abre{
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 15px; border-radius: 12px; cursor: pointer; font-size: .9rem; font-weight: 600;
+  background: #1C1C21; color: #EDEAE2; border: 1px solid rgba(237,234,226,.16);
 }
-.cx-meses button.ativo{ background: #FFC20E; color: #17171B; border-color: #FFC20E; font-weight: 700; }
+.cx-mes-abre i{ font-style: normal; opacity: .6; }
+.cx-mes-abre.aberto{ border-color: #FFC20E; color: #FFC20E; }
+
+.cx-calendario{
+  width: min(300px, 100%);
+  background: #131316; border: 1px solid rgba(237,234,226,.14);
+  border-radius: 14px; padding: 12px;
+}
+.cx-cal-ano{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.cx-cal-ano b{ font-size: 1rem; }
+.cx-cal-ano button{
+  flex: 0 0 auto; width: 32px; height: 32px; padding: 0; border-radius: 8px; cursor: pointer; font-size: 1.1rem; line-height: 1;
+  background: #1C1C21; color: #EDEAE2; border: 1px solid rgba(237,234,226,.16);
+}
+.cx-cal-ano button:disabled{ opacity: .25; cursor: default; }
+
+.cx-cal-grade{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.cx-cal-grade button{
+  padding: 9px 4px; border-radius: 9px; cursor: pointer; font-size: .8rem;
+  background: #1C1C21; color: #EDEAE2; border: 1px solid rgba(237,234,226,.12);
+}
+.cx-cal-grade button:disabled{ opacity: .22; cursor: default; }
+.cx-cal-grade button.ativo{ background: #FFC20E; color: #17171B; border-color: #FFC20E; font-weight: 700; }
