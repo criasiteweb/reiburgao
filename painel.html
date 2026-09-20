@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/css/comanda.css?v=19" />
-<link rel="stylesheet" href="assets/css/painel.css?v=19" />
+<link rel="stylesheet" href="assets/css/comanda.css?v=20" />
+<link rel="stylesheet" href="assets/css/painel.css?v=20" />
 </head>
 <body>
 
@@ -60,10 +60,6 @@
       </label>
     </div>
     <div class="ajustes">
-      <label class="campo-taxa">
-        <span>Taxa de entrega</span>
-        <input type="text" inputmode="decimal" data-taxa placeholder="5,00" />
-      </label>
       <button type="button" class="alternar" data-som aria-pressed="true">🔔 Som ligado</button>
       <button type="button" class="alternar" data-testar-som>Testar som</button>
     </div>
@@ -117,8 +113,11 @@
           <label class="campo" data-campo-endereco hidden><span>Endereço da entrega</span>
             <input type="text" data-endereco placeholder="Rua, número, bairro" /></label>
 
-          <label class="campo" data-campo-taxa hidden><span>Taxa de entrega</span>
-            <input type="text" inputmode="decimal" data-taxa-comanda placeholder="5,00" /></label>
+          <p class="campo cmd-taxa-aviso" data-campo-taxa hidden>
+            <span>Taxa de entrega</span>
+            <b>Combinar com o cliente</b>
+            <i>A tabela por bairro entra no site assim que a lista de bairros for passada. Até lá a comanda sai com “a combinar”.</i>
+          </p>
 
           <div class="campo">
             <span>Forma de pagamento</span>
@@ -191,10 +190,10 @@
 
 </div>
 
-<script src="assets/js/comanda-core.js?v=19"></script>
-<script src="assets/js/caixa.js?v=19"></script>
-<script src="assets/js/cardapio.js?v=19"></script>
-<script src="assets/js/balcao.js?v=19"></script>
-<script type="module" src="assets/js/painel.js?v=19"></script>
+<script src="assets/js/comanda-core.js?v=20"></script>
+<script src="assets/js/caixa.js?v=20"></script>
+<script src="assets/js/cardapio.js?v=20"></script>
+<script src="assets/js/balcao.js?v=20"></script>
+<script type="module" src="assets/js/painel.js?v=20"></script>
 </body>
 </html>

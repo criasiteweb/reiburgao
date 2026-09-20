@@ -150,12 +150,12 @@ function taxaDoPedido(p) {
 }
 
 function taxaAtual() {
-  /* o campo existe no Modo Loja; no painel de pedidos lemos o valor guardado */
-  const campo = $("[data-taxa]");
-  const bruto = campo ? campo.value : (localStorage.getItem("rb_taxa") || "");
-  const v = paraNumero(bruto);
-  return v > 0 ? v : 0;
+  /* Não há mais campo de taxa para digitar: a taxa correta vem no próprio
+     pedido, da tabela por bairro do site. Sem ela, a comanda sai com
+     "a combinar" em vez de um valor chutado. */
+  return 0;
 }
+
 
 function numeroComanda(novo) {
   const hoje = new Date().toISOString().slice(0, 10);

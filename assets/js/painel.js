@@ -820,7 +820,5 @@ el("[data-trocar-senha]").addEventListener("click", async () => {
   }
 });
 
-/* taxa de entrega fica guardada no computador da loja */
-const taxa = el("[data-taxa]");
-taxa.value = localStorage.getItem("rb_taxa") || "";
-taxa.addEventListener("input", () => localStorage.setItem("rb_taxa", taxa.value));
+/* A taxa de entrega NÃO se digita aqui: ela varia de bairro para bairro e vem
+   da tabela do site, junto com o pedido. */

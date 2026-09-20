@@ -222,7 +222,6 @@ function pintarCampos() {
   $("[data-endereco]").value = p.endereco || "";
   $("[data-obs]").value = p.obs || "";
   $("[data-mesa]").value = c.mesa || "";
-  $("[data-taxa-comanda]").value = p.taxa == null ? "" : String(p.taxa).replace(".", ",");
   $("[data-recebido]").value = c.recebido || "";
 
   $("[data-campo-mesa]").hidden = !naMesa;
@@ -391,7 +390,6 @@ document.addEventListener("DOMContentLoaded", () => {
   liga("[data-endereco]", v => comanda().pedido.endereco = v);
   liga("[data-obs]",      v => comanda().pedido.obs = v);
   liga("[data-mesa]",     v => { comanda().mesa = v; });
-  liga("[data-taxa-comanda]", v => comanda().pedido.taxa = v.trim() ? paraNumero(v) : null);
   liga("[data-recebido]", v => comanda().recebido = v);
 
   const cx = $("[data-busca]");

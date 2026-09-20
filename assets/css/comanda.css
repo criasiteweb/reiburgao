@@ -299,3 +299,8 @@ details.guia strong{color:var(--texto)}
 
 .cmd-folha h2{ font-size: .95rem; margin: 0 0 10px; }
 .cmd-folha .marca{ display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: .82rem; opacity: .8; }
+
+/* taxa por bairro: não se digita aqui, vem da tabela do site */
+.cmd-taxa-aviso{ display: grid; gap: 3px; margin: 0; }
+.cmd-taxa-aviso b{ font-size: .95rem; color: #FFC20E; }
+.cmd-taxa-aviso i{ font-size: .74rem; opacity: .6; font-style: normal; line-height: 1.35; }
