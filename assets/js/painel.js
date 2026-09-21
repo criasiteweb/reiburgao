@@ -42,6 +42,44 @@ let primeiraCarga = true;  // não apita ao abrir a tela
 let filtro = "abertos";    // abertos | todos | historico
 let dataHistorico = null;  // "AAAA-MM-DD" quando olhando um dia passado
 
+/* ========================= proteções de funcionamento =========================
+   Esta tela fica aberta a noite inteira num balcão. Três coisas podem
+   estragá-la em silêncio, e cada uma tem aqui a sua rede de segurança. */
+
+/* 1) O navegador bloqueia som até alguém tocar na página. Sem isto, o pedido
+      chegaria e ninguém ouviria o apito. */
+function avisarSomBloqueado(bloqueado) {
+  const f = el("[data-aviso-som]");
+  if (f) f.hidden = !bloqueado;
+}
+
+/* 2) Um erro solto deixaria a tela morta sem ninguém perceber. */
+function avisarErro() {
+  const f = el("[data-aviso-erro]");
+  if (f) f.hidden = false;
+}
+window.addEventListener("error", avisarErro);
+window.addEventListener("unhandledrejection", avisarErro);
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-recarregar]")) location.reload();
+});
+
+/* 3) O espaço do aparelho pode encher e travar as comandas guardadas. */
+window.guardarComSeguranca = function (chave, texto) {
+  try { localStorage.setItem(chave, texto); return true; }
+  catch (e) {
+    try {
+      /* joga fora o que é descartável e tenta de novo */
+      localStorage.removeItem("rb_comanda_seq");
+      localStorage.setItem(chave, texto);
+      return true;
+    } catch (e2) {
+      alert("A memória deste aparelho está cheia. Feche as comandas antigas ou use outro navegador.");
+      return false;
+    }
+  }
+};
+
 /* ========================= alerta sonoro ========================= */
 /* Gerado na hora pelo navegador — sem arquivo de som para carregar. */
 let audioCtx = null;
@@ -49,7 +87,13 @@ function apitar(vezes = 3) {
   if (localStorage.getItem("rb_som") === "nao") return;
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === "suspended") audioCtx.resume();
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+      /* ainda suspenso quer dizer que o navegador exige um toque na tela */
+      setTimeout(() => avisarSomBloqueado(audioCtx.state === "suspended"), 300);
+    } else {
+      avisarSomBloqueado(false);
+    }
     for (let i = 0; i < vezes; i++) {
       const t0 = audioCtx.currentTime + i * 0.38;
       const osc = audioCtx.createOscillator();
@@ -932,6 +976,26 @@ botaoSom.addEventListener("click", () => {
 pintarSom();
 
 el("[data-testar-som]").addEventListener("click", () => apitar(2));
+
+/* o primeiro toque em qualquer lugar libera o som no navegador */
+["click", "keydown", "touchstart"].forEach(ev =>
+  document.addEventListener(ev, function liberar() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume().then(() => avisarSomBloqueado(false));
+      else avisarSomBloqueado(false);
+    } catch (e) {}
+  }, { once: true, passive: true })
+);
+
+/* confere o som assim que a tela abre, sem esperar chegar pedido */
+setTimeout(() => {
+  try {
+    const t = new (window.AudioContext || window.webkitAudioContext)();
+    avisarSomBloqueado(t.state === "suspended");
+    t.close();
+  } catch (e) {}
+}, 1200);
 
 /* ========================= aviso de internet caída =========================
    O painel é a porta de entrada dos pedidos: se a internet cair, quem está no

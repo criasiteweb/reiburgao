@@ -20,8 +20,10 @@ let busca = "";
 
 /* ========================= guardar e ler ========================= */
 function salvar() {
-  try { localStorage.setItem(CHAVE_COMANDAS, JSON.stringify({ comandas, atual })); }
-  catch (e) { /* aparelho sem espaço: segue só na memória */ }
+  const texto = JSON.stringify({ comandas, atual });
+  if (window.guardarComSeguranca) { window.guardarComSeguranca(CHAVE_COMANDAS, texto); return; }
+  try { localStorage.setItem(CHAVE_COMANDAS, texto); }
+  catch (e) { /* aparelho sem espaço: segue só na memória desta sessão */ }
 }
 
 function carregar() {

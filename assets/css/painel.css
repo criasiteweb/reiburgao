@@ -408,3 +408,16 @@ body.ver-papel .papel{position:static;left:auto;margin:0 auto}
 .ed-estoque.tem{background:rgba(47,169,107,.14);color:var(--verde);border:1px solid rgba(47,169,107,.45)}
 .ed-estoque.fora{background:rgba(216,38,28,.16);color:#FF8D82;border:1px solid rgba(216,38,28,.55)}
 .ed-estoque:disabled{opacity:.6;cursor:default}
+
+/* ---------- faixas de aviso de funcionamento ---------- */
+.faixa-alerta,.faixa-erro{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  width:100%;padding:11px 16px;border:0;cursor:pointer;
+  font:600 13.5px/1.4 "Inter",sans-serif;text-align:center;
+}
+.faixa-alerta{background:var(--amarelo);color:#1a1200}
+.faixa-alerta b{font-weight:800;text-decoration:underline}
+.faixa-erro{background:rgba(216,38,28,.18);color:#FF8D82;cursor:default;
+  border-top:1px solid rgba(216,38,28,.4);border-bottom:1px solid rgba(216,38,28,.4)}
+.faixa-erro button{padding:6px 12px;border-radius:8px;cursor:pointer;
+  font:700 12px/1.2 "Inter",sans-serif;background:#FF8D82;color:#2a0d0a;border:0}
