@@ -28,33 +28,150 @@ const LOJA = {
      ======================================================= */
   entrega: {
     ativa: true,
-    raioKm: 10,                        // [CONFIRMAR com o dono]
-    /* ⚠️ VALORES SUGERIDOS pela Criasiteweb, calculados pela distância real
-       de cada bairro até a loja (base R$ 3,00 até 2 km, +R$ 1,00 por km).
-       SUBSTITUIR pela tabela do dono assim que ele passar.
-       Bairros de Mogi acima de 10 km foram deixados de fora da lista. */
+    raioKm: 10,
+    /* Tabela do dono (PDF "taxas rei burgão", 21/09/2026): 133 bairros,
+       km medido pela rua. Acima de 10 km não há entrega. */
     cidades: {
       "Suzano": {
-        "Jardim Quaresmeira":   3,      // ~0,5 km
-        "Jardim Imperador":     3,      // ~2,2 km
-        "Casa Branca":          3.5,    // ~2,3 km
-        "Centro":               3.5,    // ~2,6 km
-        "Parque Maria Helena":  4,      // ~2,9 km
-        "Vila Amorim":          4.5,    // ~3,6 km
-        "Vila Urupês":          5,      // ~3,8 km
-        "Cidade Miguel Badra":  6,      // ~5,0 km
-        "Jardim Revista":       6,      // ~5,2 km
-        "Boa Vista":            7       // ~6,0 km
+        "Jardim Suzanópolis":     3,      // 0,2 km
+        "Jardim Quaresmeira I":   3,      // 0,6 km
+        "Parque Santa Rosa":      3,      // 0,8 km
+        "Jardim Márcia":          4,      // 1,3 km
+        "Jardim Realce":          4,      // 1,5 km
+        "Jardim Vitória":         4.5,    // 1,7 km
+        "Monte Cristo":           5.5,    // 2,1 km
+        "Cidade Cruzeiro do Sul": 5.5,    // 2,3 km
+        "Polo Educacional":       5.5,    // 2,5 km
+        "Jardim São Luiz":        6,      // 2,5 km
+        "Jardim Anzai":           6,      // 2,6 km
+        "Jardim Imperador":       6,      // 2,6 km
+        "Jardim Caxangá":         6,      // 2,6 km
+        "Jadim Nena":             6,      // 2,8 km
+        "Jardim Saúde":           6,      // 2,8 km
+        "Jardim Japão":           6,      // 2,9 km
+        "Jardim Paulista":        6,      // 3,0 km
+        "Vila São Francisco":     6.5,    // 3,0 km
+        "Parque Suzano":          7,      // 3,3 km
+        "Vila Costa":             7,      // 3,5 km
+        "Cidade Edson":           7.5,    // 3,5 km
+        "Vila Figueira":          7.5,    // 3,7 km
+        "Vila São Jorge":         7.5,    // 3,7 km
+        "Vila Barros":            8.5,    // 4,2 km
+        "Centro":                 9,      // 4,6 km
+        "Vila Urupês":            9,      // 4,8 km
+        "Vila Mazza":             9,      // 4,9 km
+        "Vila Amorim":            9.5,    // 5,1 km
+        "Jardim Luela":           10.5,   // 5,6 km
+        "Vila Nova Amorim":       10.5,   // 5,7 km
+        "Jardim Luella":          10.5,   // 5,7 km
+        "Jardim Colorado":        11,     // 5,9 km
+        "Sítio Suíço":            11.5,   // 6,0 km
+        "Parque Maria Helena":    11.5,   // 6,4 km
+        "Vila Maluf":             12,     // 6,6 km
+        "Jardim Maite":           12,     // 6,8 km
+        "Jardim Nazareth":        12,     // 6,9 km
+        "Jardim Miriam":          14,     // 7,9 km
+        "Jardim Revista":         14.5,   // 8,1 km
+        "Jardim Dom Ângelo":      14.5,   // 8,1 km
+        "Raffo":                  14.5,   // 8,1 km
+        "Taba Marajoara":         14.5,   // 8,1 km
+        "Rio Baixo":              14.5,   // 8,2 km
+        "Cidade Miguel Badra":    14.5,   // 8,4 km
+        "Vila Helena":            15,     // 8,5 km
+        "Areião":                 15,     // 8,6 km
+        "Jardim Leblon":          15,     // 8,7 km
+        "Vila Yolanda":           15,     // 8,9 km
+        "Jardim Alterópolis":     15.5,   // 9,1 km
+        "Parque Alvorada":        15.5,   // 9,1 km
+        "Jardim Veran":           15.5,   // 9,1 km
+        "Barro Branco":           15.5,   // 9,2 km
+        "Chácaras Ceres":         15.5,   // 9,2 km
+        "Vila Laura":             15.5,   // 9,2 km
+        "Jardim Maravilha":       16,     // 9,3 km
+        "Sitío Conceição":        16,     // 9,4 km
+        "Cidade Boa Vista":       16,     // 9,4 km
+        "Jardim Gardênia Azul":   16,     // 9,5 km
+        "Fazenda Aya":            16.5,   // 9,5 km
+        "Jardim Nova América":    16.5,   // 9,7 km
+        "Jardim Dona Benta":      16.5,   // 9,7 km
+        "Jardim Davidenko":       16.5,   // 9,7 km
+        "Jardim Soares":          17,     // 9,8 km
+        "Sesc":                   17,     // 9,8 km
+        "Jardim Fernandes":       17,     // 9,8 km
+        "Jardim Ferraz":          17      // 10,0 km
       },
       "Poá": {
-        "Jardim Nova Poá":      3,      // ~1,3 km
-        "Centro":               4,      // ~3,0 km
-        "Vila Varela":          5.5,    // ~4,3 km
-        "Cidade Kemel":         5.5,    // ~4,7 km
-        "Vila Perracini":       null    // não localizei a distância
+        "Jardim Nova Poá":      5,      // 1,9 km
+        "Jardim Itamaraty":     5.5,    // 2,2 km
+        "Jardim Obelisco":      5.5,    // 2,4 km
+        "Biritiba":             6,      // 2,7 km
+        "Jardim São José":      6,      // 2,8 km
+        "Calmon Viana":         6,      // 2,8 km
+        "Vila Archimedes":      6.5,    // 3,0 km
+        "Vila Amélia":          6.5,    // 3,2 km
+        "Vila Cristelo":        7,      // 3,3 km
+        "Vila Ruth":            7.5,    // 3,7 km
+        "Jardim Selma Helena":  7.5,    // 3,7 km
+        "Jardim São Francisco": 8,      // 3,9 km
+        "Vila Bandeirante":     10,     // 5,3 km
+        "Vila Bandeirantes":    10,     // 5,4 km
+        "Vila Anita":           10,     // 5,5 km
+        "Vila Jaú":             10.5,   // 5,5 km
+        "Vila Ibar":            10.5,   // 5,5 km
+        "Vila Júlia":           10.5,   // 5,7 km
+        "Vila Monteiro":        11,     // 6,0 km
+        "Jardim Medina":        11.5,   // 6,3 km
+        "Jardim Áurea":         11.5,   // 6,3 km
+        "Chácara Bela Vista":   11.5,   // 6,4 km
+        "Vila Varela":          12,     // 7,0 km
+        "Jardim América":       12.5,   // 7,1 km
+        "Vila Áurea":           12.5,   // 7,1 km
+        "Jardim Santa Helena":  12.5,   // 7,2 km
+        "Jardim Ivonete":       14.5    // 8,2 km
       },
-      "Mogi das Cruzes": {
-        "Jundiapeba":           9       // ~7,8 km — os demais bairros de Mogi passam de 10 km
+      "Ferraz de Vasconcelos": {
+        "Jardim Santiago":                7,      // 3,3 km
+        "Jardim Yone":                    7.5,    // 3,7 km
+        "Vila Corrêa":                    8.5,    // 4,2 km
+        "Vila do Parque São Judas Tadeu": 8.5,    // 4,3 km
+        "Jardim Juliana":                 9,      // 4,5 km
+        "Sítio do Paiolzinho":            9,      // 4,6 km
+        "Vila São Paulo":                 9.5,    // 5,1 km
+        "Vila São Sebastião":             10,     // 5,4 km
+        "Chácara Guaio":                  11.5,   // 6,1 km
+        "Jardim São João":                11.5,   // 6,4 km
+        "Vila Romanópolis":               11.5,   // 6,5 km
+        "Vila Andeyara":                  12,     // 6,6 km
+        "Parque São Francisco":           12.5,   // 7,0 km
+        "Vila Santa Margarida":           12.5,   // 7,2 km
+        "Vila Arbame":                    13.5,   // 7,6 km
+        "Jardim Barão":                   13.5,   // 7,6 km
+        "Vila do Americano":              13.5,   // 7,7 km
+        "Tanquinho":                      14,     // 7,8 km
+        "Jardim Vista Alegre":            14,     // 7,8 km
+        "Jardim Luiz Mauro":              14.5,   // 8,1 km
+        "Vila Santo Antonio":             14.5,   // 8,4 km
+        "Jardim Malda":                   15,     // 8,5 km
+        "Santo Antônio Paulista":         15,     // 8,7 km
+        "Jardim Brigída":                 15,     // 8,9 km
+        "Vila Rio Guaió":                 15,     // 9,0 km
+        "Jardim Santa Rosa":              15.5,   // 9,2 km
+        "Jardim Renata":                  16.5    // 9,7 km
+      },
+      "Itaquaquecetuba": {
+        "Rancho Grande":     12.5,   // 7,1 km
+        "Vila Florindo":     12.5,   // 7,2 km
+        "Santa Tereza":      13,     // 7,4 km
+        "Cidade Kemel":      14,     // 7,9 km
+        "Jardim do Algarve": 14,     // 7,9 km
+        "Vila Ursulina":     14.5,   // 8,0 km
+        "Pedreira":          15,     // 8,6 km
+        "Jardim Luciana":    15.5,   // 9,2 km
+        "Jardim Gonçalves":  16,     // 9,3 km
+        "Morro Branco":      16,     // 9,4 km
+        "Vila Zeferina":     16,     // 9,5 km
+        "Vila Virginia":     16.5,   // 9,6 km
+        "Jardim São Paulo":  17      // 9,8 km
       }
     },
 
@@ -67,10 +184,10 @@ const LOJA = {
        ===================================================== */
     porDistancia: {
       ativa: true,
-      base: 3,        // cobra isto até o "ateKm"
-      ateKm: 2,
-      porKm: 1,       // some isto a cada km depois disso
-      maxKm: 10,      // [CONFIRMAR] fora deste raio, não entrega
+      /* degraus do dono: [km, R$]; entre dois degraus paga o meio do caminho */
+      degraus: [[0, 3], [1, 3], [2, 5], [3, 6], [4, 8], [5, 9],
+                [6, 11], [7, 12], [8, 14], [9, 15], [10, 17]],
+      maxKm: 10,      // fora deste raio, não entrega
       fator: 1.3      // linha reta -> rua de verdade (ruas dão voltas)
     },
 
@@ -380,8 +497,12 @@ function taxaPorKm(km) {
   const c = LOJA.entrega.porDistancia;
   if (!c || !c.ativa || km == null) return null;
   if (km > c.maxKm) return "fora";
-  const v = c.base + Math.max(0, km - c.ateKm) * c.porKm;
-  return Math.round(v * 2) / 2;            // arredonda para R$ 0,50
+  const d = c.degraus;
+  let i = 1;
+  while (i < d.length - 1 && km > d[i][0]) i++;
+  const [k0, v0] = d[i - 1], [k1, v1] = d[i];
+  const v = v0 + (v1 - v0) * (km - k0) / (k1 - k0);
+  return Math.ceil(v * 2 - 1e-9) / 2;      // sobe para o R$ 0,50 seguinte
 }
 
 function pedirDistancia() {
@@ -620,7 +741,11 @@ function taxaEntrega() {
   const bairro = sel ? sel.value : "";
   if (bairro && bairro !== SEM_LISTA) {
     const cidade = $("[data-cidade]").value;
-    const v = (LOJA.entrega.cidades[cidade] || {})[bairro];
+    let v = (LOJA.entrega.cidades[cidade] || {})[bairro];
+    /* bairro na divisa: procura também na outra cidade */
+    if (typeof v !== "number")
+      for (const c of Object.values(LOJA.entrega.cidades))
+        if (typeof c[bairro] === "number") { v = c[bairro]; break; }
     if (typeof v === "number") return v;      // preço combinado com o dono
   }
   const porKm = taxaPorKm(distanciaKm);       // qualquer outro endereço
