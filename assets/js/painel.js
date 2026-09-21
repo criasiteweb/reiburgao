@@ -996,21 +996,38 @@ async function lerEstadoLoja() {
   pintarLoja();
 }
 
+/* Dois estados, de propósito:
+   "No horário normal" = o site abre e fecha sozinho, das 18h à meia-noite.
+   "Fechada agora"     = fecha antes da hora (acabou o pão, faltou gás).
+
+   O botão NUNCA força a loja a ficar aberta fora do horário: se alguém
+   esquecesse ligado, o site aceitaria pedido às 3h da manhã. Para mudar o
+   horário de funcionamento, fale com a Criasiteweb. */
 el("[data-loja-estado]").addEventListener("click", async () => {
   const fechando = lojaAberta !== false;
   const aviso = fechando
-    ? "Fechar a loja agora?\n\nO site vai mostrar FECHADO para os clientes e não deixa enviar pedido."
-    : "Abrir a loja agora?\n\nO site volta a aceitar pedidos.";
+    ? "Fechar a loja agora?\n\nO site vai mostrar FECHADO e não deixa o cliente enviar pedido, mesmo dentro do horário."
+    : "Voltar ao horário normal?\n\nO site volta a abrir e fechar sozinho, das 18h à meia-noite, de terça a domingo.";
   if (!confirm(aviso)) return;
+
   const antes = lojaAberta;
-  lojaAberta = !fechando;
+  lojaAberta = fechando ? false : null;
   pintarLoja();
   try {
-    await setDoc(doc(db, "publico", "loja"), {
-      aberta: !fechando,
-      dia: hojeISO(),               // vale só hoje
-      mudadoEm: Timestamp.now()
-    });
+    if (fechando) {
+      await setDoc(doc(db, "publico", "loja"), {
+        aberta: false,
+        dia: hojeISO(),             // o fechamento vale só hoje
+        mudadoEm: Timestamp.now()
+      });
+    } else {
+      /* volta ao automático: sem dia válido, o site segue o horário */
+      await setDoc(doc(db, "publico", "loja"), {
+        aberta: true,
+        dia: "",
+        mudadoEm: Timestamp.now()
+      });
+    }
   } catch (e) {
     lojaAberta = antes; pintarLoja();
     alert("Não consegui salvar. Verifique a internet e tente de novo.");

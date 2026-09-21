@@ -906,9 +906,10 @@ async function lerEstadoLoja() {
     const ag = new Date();
     const hojeTxt = ag.getFullYear() + "-" + String(ag.getMonth() + 1).padStart(2, "0") +
       "-" + String(ag.getDate()).padStart(2, "0");
-    /* o ajuste na mão vale só no dia em que foi feito */
-    lojaNoManual = (dia === hojeTxt && v && typeof v.booleanValue === "boolean")
-      ? v.booleanValue : null;
+    /* O botão do painel só FECHA antes da hora, e vale só no dia em que foi
+       usado. Nunca força a loja a ficar aberta fora do horário: senão um
+       esquecimento deixaria o site aceitando pedido de madrugada. */
+    lojaNoManual = (dia === hojeTxt && v && v.booleanValue === false) ? false : null;
     travarEnvio();
   } catch (e) { /* sem internet ou sem permissão: vale o horário */ }
   statusLoja();
