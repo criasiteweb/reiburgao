@@ -96,6 +96,18 @@ function paraLink(txt) {
 /* ---- adicionais ---- */
 /* ---- adicionais, grupos e itens do cardápio vivem em cardapio.js ---- */
 
+/* O navegador guarda onde a pessoa parou e devolve ali na volta, o que fazia
+   o site abrir no meio dos combos. Quem chega pelo link tem que ver o começo.
+   Só respeitamos a rolagem quando o próprio endereço aponta para uma seção. */
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+(function comecarNoTopo() {
+  const temAncora = location.hash && location.hash.length > 1;
+  if (temAncora) return;
+  const subir = () => window.scrollTo(0, 0);
+  subir();
+  window.addEventListener("load", subir, { once: true });
+})();
+
 /* ========================= utilidades ========================= */
 const $  = (s, c = document) => c.querySelector(s);
 const $$ = (s, c = document) => [...c.querySelectorAll(s)];
