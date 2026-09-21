@@ -141,7 +141,7 @@ function montarCardapio() {
           ${itens.map(i => `
             <button class="item" type="button" data-item="${i.id}">
               <span class="item-foto">
-                <img src="assets/img/fotos/${i.f}.jpg" alt="${i.n}" loading="lazy" decoding="async" width="560" height="420" />
+                <img src="${i.foto || `assets/img/fotos/${i.f}.jpg`}" alt="${i.n}" loading="lazy" decoding="async" width="560" height="420" />
                 ${i.tag ? `<span class="etiqueta">${i.tag}</span>` : ""}
               </span>
               <span class="item-corpo">
@@ -180,7 +180,7 @@ function abrirModal(id) {
   itemAtual = it; qtdAtual = 1;
 
   const mf = $("[data-modal-foto]");
-  mf.src = `assets/img/fotos/${it.f}.jpg`;
+  mf.src = it.foto || `assets/img/fotos/${it.f}.jpg`;
   mf.alt = it.n;
   $("[data-modal-cat]").textContent = GRUPOS.find(g => g.id === it.g).titulo;
   $("[data-modal-nome]").textContent = it.n;
@@ -547,7 +547,7 @@ function montarCombos() {
     return `
       <button class="combo-card" type="button" data-item="${c.id}">
         <span class="combo-foto">
-          <img src="assets/img/fotos/${c.f}.jpg" alt="${c.n}" loading="lazy" decoding="async" width="560" height="420" />
+          <img src="${c.foto || `assets/img/fotos/${c.f}.jpg`}" alt="${c.n}" loading="lazy" decoding="async" width="560" height="420" />
           <span class="combo-selo">${c.escolhas} lanches</span>
         </span>
         <span class="combo-corpo">
@@ -873,6 +873,7 @@ async function lerCardapioAjustado() {
       if (campos.n && campos.n.stringValue) { alvo.n = campos.n.stringValue; mudou = true; }
       if (campos.d && campos.d.stringValue != null) { alvo.d = campos.d.stringValue; mudou = true; }
       if (campos.f && campos.f.stringValue) { alvo.f = campos.f.stringValue; mudou = true; }
+      if (campos.foto && campos.foto.stringValue) { alvo.foto = campos.foto.stringValue; mudou = true; }
       alvo.off = !!(campos.off && campos.off.booleanValue);
       if (alvo.off) mudou = true;
     });

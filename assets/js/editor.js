@@ -28,6 +28,7 @@ function itemAjustado(i) {
     n: a.n || i.n,
     d: a.d != null ? a.d : (i.d || ""),
     f: a.f || i.f || "",
+    foto: a.foto || "",          // foto trocada pelo dono (fica guardada no servidor)
     off: a.off === true
   };
 }
@@ -78,9 +79,15 @@ function edDesenharLista() {
     return `
     <div class="ed-item ${v.off ? "esgotado" : ""} ${mudou ? "mudou" : ""}" data-ed-id="${i.id}">
       <div class="ed-foto">
-        ${v.f ? `<img src="assets/img/fotos/${edEscapa(v.f)}.jpg" alt="" loading="lazy"
-                     onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ed-semfoto',textContent:'sem foto'}))">`
-              : `<span class="ed-semfoto">sem foto</span>`}
+        ${v.foto
+          ? `<img src="${v.foto}" alt="">`
+          : v.f ? `<img src="assets/img/fotos/${edEscapa(v.f)}.jpg" alt="" loading="lazy"
+                       onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ed-semfoto',textContent:'sem foto'}))">`
+                : `<span class="ed-semfoto">sem foto</span>`}
+        <label class="ed-trocar-foto" title="Trocar a foto">
+          <input type="file" accept="image/*" data-ed-foto hidden />
+          <span>trocar</span>
+        </label>
       </div>
 
       <div class="ed-dados">
@@ -104,6 +111,70 @@ function edDesenharLista() {
 }
 
 function edDesenhar() { edDesenharGrupos(); edDesenharLista(); }
+
+/* ---------- trocar a foto ----------
+   A imagem é reduzida aqui no navegador antes de subir: o dono tira foto com
+   o celular (3 MB) e o que vai para o servidor tem cerca de 20 KB. Sem isso,
+   estouraria o espaço e o site do cliente ficaria pesado. */
+function encolherImagem(arquivo, larguraMax = 460, qualidade = 0.68) {
+  return new Promise((ok, falhou) => {
+    const leitor = new FileReader();
+    leitor.onerror = () => falhou(new Error("não consegui ler o arquivo"));
+    leitor.onload = () => {
+      const img = new Image();
+      img.onerror = () => falhou(new Error("esse arquivo não é uma imagem"));
+      img.onload = () => {
+        const escala = Math.min(1, larguraMax / img.width);
+        const l = Math.round(img.width * escala), a = Math.round(img.height * escala);
+        const tela = document.createElement("canvas");
+        tela.width = l; tela.height = a;
+        tela.getContext("2d").drawImage(img, 0, 0, l, a);
+        ok(tela.toDataURL("image/jpeg", qualidade));
+      };
+      img.src = leitor.result;
+    };
+    leitor.readAsDataURL(arquivo);
+  });
+}
+
+/* quanto espaço as fotos já ocupam (o servidor aceita cerca de 1 MB no total) */
+function espacoDasFotos() {
+  let total = 0;
+  Object.keys(window.ajustes || {}).forEach(id => {
+    const f = window.ajustes[id].foto;
+    if (f) total += f.length;
+  });
+  return total;
+}
+
+document.addEventListener("change", async e => {
+  const campo = e.target.closest("[data-ed-foto]");
+  if (!campo || !campo.files || !campo.files[0]) return;
+  const caixa = campo.closest("[data-ed-id]");
+  const id = caixa.dataset.edId;
+  const st = document.querySelector("[data-ed-status]");
+
+  try {
+    if (st) st.textContent = "Preparando a foto…";
+    const pequena = await encolherImagem(campo.files[0]);
+
+    const antes = (window.ajustes[id] || {}).foto || "";
+    if (espacoDasFotos() - antes.length + pequena.length > 900000) {
+      if (st) st.textContent = "Espaço de fotos cheio. Apague alguma foto trocada antes de pôr outra.";
+      campo.value = "";
+      return;
+    }
+
+    window.ajustes[id] = window.ajustes[id] || {};
+    window.ajustes[id].foto = pequena;
+    marcarSujo(true);
+    edDesenharLista();
+    if (st) st.textContent = "Foto trocada. Toque em Salvar alterações.";
+  } catch (err) {
+    if (st) st.textContent = "Não consegui usar essa imagem. Tente outra.";
+  }
+  campo.value = "";
+});
 
 /* ---------- ligação com a tela ---------- */
 document.addEventListener("input", e => {

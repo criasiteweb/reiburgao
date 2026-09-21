@@ -391,3 +391,10 @@ body.ver-papel .papel{position:static;left:auto;margin:0 auto}
 .cardapio-editor .ed-grupos button{flex:0 0 auto!important;padding:5px 11px!important;
   font:600 12px/1.2 "Inter",sans-serif!important;border-radius:8px!important;min-height:0!important}
 .cardapio-editor .ed-lado button{padding:4px 9px!important;font-size:10.5px!important;min-height:0!important}
+
+/* trocar a foto do item */
+.ed-foto{position:relative}
+.ed-trocar-foto{position:absolute;left:0;right:0;bottom:0;cursor:pointer;
+  background:rgba(0,0,0,.72);color:#fff;font:600 9.5px/1 "Inter",sans-serif;
+  text-align:center;padding:4px 0;letter-spacing:.04em;text-transform:uppercase}
+.ed-trocar-foto:hover{background:var(--amarelo);color:#1a1200}
