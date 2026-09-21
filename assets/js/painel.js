@@ -933,6 +933,22 @@ pintarSom();
 
 el("[data-testar-som]").addEventListener("click", () => apitar(2));
 
+/* ========================= aviso de internet caída =========================
+   O painel é a porta de entrada dos pedidos: se a internet cair, quem está no
+   balcão precisa saber na hora, e não descobrir depois com o cliente ligando. */
+function pintarConexao(ok) {
+  const c = el("[data-conexao]");
+  if (!c) return;
+  c.dataset.ok = ok ? "sim" : "nao";
+  c.textContent = ok ? "Conectado" : "SEM INTERNET";
+}
+window.addEventListener("offline", () => pintarConexao(false));
+window.addEventListener("online", () => {
+  pintarConexao(true);
+  escutarPedidos();
+  lerEstadoLoja();
+});
+
 /* ========================= cardápio editado pelo dono ========================= */
 async function carregarAjustesCardapio() {
   try {

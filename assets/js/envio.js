@@ -21,7 +21,13 @@ const db = getFirestore(initializeApp(FIREBASE_CONFIG));
 /* corta textos muito longos — protege contra abuso e mantém a comanda legível */
 const limitar = (s, n) => String(s == null ? "" : s).slice(0, n);
 
-window.enviarParaPainel = async function (dados) {
+/* Espera um pouco entre as tentativas */
+const esperar = ms => new Promise(r => setTimeout(r, ms));
+
+/* O pedido é o que não pode se perder. Se a internet do cliente oscilar no
+   exato momento do envio, tentamos de novo antes de desistir. O WhatsApp
+   continua abrindo de qualquer jeito, então o pedido nunca some. */
+window.enviarParaPainel = async function (dados, tentativa = 1) {
   try {
     await addDoc(collection(db, "pedidos"), {
       criadoEm: serverTimestamp(),
@@ -38,8 +44,12 @@ window.enviarParaPainel = async function (dados) {
       itens:    Number(dados.itens) || 0
     });
     return true;
-  } catch (e) {
-    console.warn("Pedido não chegou ao painel (o WhatsApp segue normal):", e);
+  } catch (err) {
+    if (tentativa < 3) {
+      await esperar(tentativa * 1200);          // 1,2s e depois 2,4s
+      return window.enviarParaPainel(dados, tentativa + 1);
+    }
+    console.warn("Pedido não chegou ao painel (o WhatsApp segue normal):", err);
     return false;
   }
 };

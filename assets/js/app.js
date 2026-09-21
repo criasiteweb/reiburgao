@@ -890,11 +890,42 @@ async function lerCardapioAjustado() {
       if (alvo.off) mudou = true;
     });
 
+    guardarNoAparelho("cardapio", itens.fields);
     if (mudou && typeof montarCardapio === "function") montarCardapio();
-  } catch (e) { /* sem internet: vale o cardápio do arquivo */ }
+  } catch (e) {
+    /* servidor fora: usa a última versão boa guardada no aparelho, e na
+       falta dela os preços do arquivo. O cardápio nunca some. */
+    const guardado = lerDoAparelho("cardapio", 24 * 60 * 60 * 1000);
+    if (!guardado) return;
+    let mudou = false;
+    Object.keys(guardado).forEach(id => {
+      const campos = (guardado[id].mapValue || {}).fields || {};
+      const alvo = CARDAPIO.find(x => x.id === id);
+      if (!alvo) return;
+      if (campos.p && campos.p.doubleValue != null) { alvo.p = Number(campos.p.doubleValue); mudou = true; }
+      if (campos.n && campos.n.stringValue) { alvo.n = campos.n.stringValue; mudou = true; }
+      if (campos.foto && campos.foto.stringValue) { alvo.foto = campos.foto.stringValue; mudou = true; }
+      alvo.off = !!(campos.off && campos.off.booleanValue);
+      if (alvo.off) mudou = true;
+    });
+    if (mudou && typeof montarCardapio === "function") montarCardapio();
+  }
 }
 
 /* lê o interruptor da loja no servidor (leitura pública, sem biblioteca) */
+/* guarda a última resposta boa do servidor, para o site continuar certo
+   mesmo se o servidor ficar fora do ar na próxima consulta */
+function guardarNoAparelho(chave, valor) {
+  try { localStorage.setItem("reiburgao:" + chave, JSON.stringify({ v: valor, em: Date.now() })); } catch (e) {}
+}
+function lerDoAparelho(chave, validadeMs) {
+  try {
+    const g = JSON.parse(localStorage.getItem("reiburgao:" + chave) || "null");
+    if (g && Date.now() - g.em < validadeMs) return g.v;
+  } catch (e) {}
+  return null;
+}
+
 async function lerEstadoLoja() {
   const url = "https://firestore.googleapis.com/v1/projects/rei-burgao-pedidos/databases/(default)/documents/publico/loja";
   try {
@@ -910,8 +941,18 @@ async function lerEstadoLoja() {
        usado. Nunca força a loja a ficar aberta fora do horário: senão um
        esquecimento deixaria o site aceitando pedido de madrugada. */
     lojaNoManual = (dia === hojeTxt && v && v.booleanValue === false) ? false : null;
+    guardarNoAparelho("loja", { fechada: lojaNoManual === false, dia: hojeTxt });
     travarEnvio();
-  } catch (e) { /* sem internet ou sem permissão: vale o horário */ }
+  } catch (e) {
+    /* servidor fora do ar: vale a última resposta boa de hoje, e na falta
+       dela o horário normal. O site nunca fica quebrado por causa disso. */
+    const ag = new Date();
+    const hojeTxt = ag.getFullYear() + "-" + String(ag.getMonth() + 1).padStart(2, "0") +
+      "-" + String(ag.getDate()).padStart(2, "0");
+    const guardado = lerDoAparelho("loja", 12 * 60 * 60 * 1000);
+    lojaNoManual = (guardado && guardado.dia === hojeTxt && guardado.fechada) ? false : null;
+    travarEnvio();
+  }
   statusLoja();
 }
 
@@ -940,9 +981,20 @@ document.addEventListener("DOMContentLoaded", () => {
   statusLoja();
   lerEstadoLoja();
   lerCardapioAjustado();
-  setInterval(statusLoja, 60000);
-  setInterval(lerEstadoLoja, 120000);
-  setInterval(lerCardapioAjustado, 120000);
+  setInterval(statusLoja, 60000);   // só relógio, não consulta nada
+
+  /* As consultas ao servidor só acontecem com a aba à vista. Aba esquecida
+     aberta a noite toda não fica consumindo a cota do plano gratuito, que é
+     o que poderia derrubar o sistema num dia de movimento. */
+  const consultarServidor = () => {
+    if (document.visibilityState !== "visible") return;
+    lerEstadoLoja();
+    lerCardapioAjustado();
+  };
+  setInterval(consultarServidor, 300000);        // 5 minutos
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") consultarServidor();
+  });
   efeitos();
 
   $$("[data-abrir-carrinho]").forEach(b => b.addEventListener("click", () => abrirCarrinho(true)));
