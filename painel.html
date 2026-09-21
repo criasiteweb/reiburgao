@@ -64,6 +64,7 @@
       <button type="button" data-filtro="historico" aria-pressed="false">Histórico</button>
       <button type="button" data-filtro="caixa" aria-pressed="false">Caixa</button>
       <button type="button" data-filtro="balcao" aria-pressed="false">Comanda</button>
+      <button type="button" data-filtro="cardapio" aria-pressed="false">Cardápio</button>
       <label class="caixa-data" data-caixa-data hidden>
         <span>Dia</span>
         <input type="date" data-data />
@@ -78,6 +79,23 @@
   <div class="resumo" data-resumo hidden></div>
 
   <section class="caixa" data-caixa hidden></section>
+
+  <section class="cardapio-editor" data-editor hidden>
+    <div class="ed-topo">
+      <div>
+        <h2>Cardápio</h2>
+        <p class="ed-ajuda">Mude o preço, marque o que acabou e ajuste nome, descrição e foto.
+           O site muda em até 2 minutos.</p>
+      </div>
+      <div class="ed-acoes">
+        <span class="ed-status" data-ed-status></span>
+        <button type="button" class="principal" data-ed-salvar>Salvar alterações</button>
+      </div>
+    </div>
+    <div class="ed-busca"><input type="search" data-ed-busca placeholder="Procurar item…" /></div>
+    <div class="ed-grupos" data-ed-grupos></div>
+    <div class="ed-lista" data-ed-lista></div>
+  </section>
 
   <section class="balcao" data-balcao hidden>
 
@@ -189,17 +207,6 @@
     <p class="vazio">Carregando os pedidos de hoje…</p>
   </main>
 
-  <section class="zona-perigo" data-zona-perigo hidden>
-    <details>
-      <summary>Preparar o sistema para começar a valer</summary>
-      <p>Apaga <strong>todos os pedidos e todas as comandas</strong> que existem
-         hoje no sistema — os testes feitos antes da entrega. Depois disso o
-         caixa começa do zero. <strong>Não dá para desfazer.</strong></p>
-      <button type="button" class="btn-perigo" data-limpar-tudo>Apagar tudo e começar do zero</button>
-      <p class="zona-status" data-limpeza></p>
-    </details>
-  </section>
-
   <footer class="rodape-painel">
     <p>Esta tela precisa ficar <strong>aberta</strong> para apitar quando chegar pedido. Deixe fixada numa aba do navegador.</p>
     <a href="qrcode.html" target="_blank" rel="noopener">Cartaz com QR Code para imprimir →</a>
@@ -210,7 +217,7 @@
 <script>
 (function(){
   var t = Math.floor(Date.now() / 120000);
-  ["comanda-core", "caixa", "cardapio", "balcao"].forEach(function(a){
+  ["comanda-core", "caixa", "cardapio", "balcao", "editor"].forEach(function(a){
     document.write('<script src="assets/js/' + a + '.js?t=' + t + '"><\/script>');
   });
   document.write('<script type="module" src="assets/js/painel.js?t=' + t + '"><\/script>');

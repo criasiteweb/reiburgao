@@ -147,7 +147,7 @@ onAuthStateChanged(auth, usuario => {
     el("[data-senha]").value = "";
     escutarPedidos();
     lerEstadoLoja();
-    const zp = el("[data-zona-perigo]"); if (zp) zp.hidden = false;
+    carregarAjustesCardapio();
     carregarCaixa(hojeISO()).then(() => {
       if (window.rbAoCarregarComandas) window.rbAoCarregarComandas();
     });
@@ -348,11 +348,20 @@ function desenhar() {
   const lista = el("[data-lista]");
   const noCaixa  = filtro === "caixa";
   const noBalcao = filtro === "balcao";
+  const noEditor = filtro === "cardapio";
   el("[data-caixa]").hidden  = !noCaixa;
   el("[data-balcao]").hidden = !noBalcao;
+  el("[data-editor]").hidden = !noEditor;
   document.body.classList.toggle("ver-papel", noBalcao);
-  lista.hidden = noCaixa || noBalcao;
-  el("[data-resumo]").hidden = noCaixa || noBalcao || !(pedidos.length || (caixaDoDia.comandas || []).length);
+  lista.hidden = noCaixa || noBalcao || noEditor;
+  el("[data-resumo]").hidden = noCaixa || noBalcao || noEditor || !(pedidos.length || (caixaDoDia.comandas || []).length);
+
+  if (noEditor) {
+    els("[data-filtro]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filtro === filtro)));
+    el("[data-caixa-data]").hidden = true;
+    if (typeof edDesenhar === "function") edDesenhar();
+    return;
+  }
 
   if (noBalcao) {
     els("[data-filtro]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filtro === filtro)));
@@ -860,7 +869,7 @@ function imprimir(p) {
 /* ========================= controles de cima ========================= */
 els("[data-filtro]").forEach(b => b.addEventListener("click", () => {
   filtro = b.dataset.filtro;
-  if (filtro === "balcao") { desenhar(); return; }
+  if (filtro === "balcao" || filtro === "cardapio") { desenhar(); return; }
   if (filtro === "caixa") {
     const campo = el("[data-data]");
     if (!campo.value) campo.value = hojeISO();
@@ -924,34 +933,31 @@ pintarSom();
 
 el("[data-testar-som]").addEventListener("click", () => apitar(2));
 
-/* ========================= limpar tudo antes de entregar =========================
-   Apaga os pedidos e as comandas de teste, para o dono começar do zero. */
-el("[data-limpar-tudo]").addEventListener("click", async () => {
-  if (!confirm("Apagar TODOS os pedidos e comandas do sistema?\n\nIsso não dá para desfazer.")) return;
-  if (!confirm("Tem certeza mesmo?\n\nDepois disso o caixa e o histórico começam vazios.")) return;
-
-  const aviso = el("[data-limpeza]");
-  const botao = el("[data-limpar-tudo]");
-  botao.disabled = true;
-  aviso.textContent = "Apagando…";
-
-  let pedidosApagados = 0, caixasApagados = 0;
+/* ========================= cardápio editado pelo dono ========================= */
+async function carregarAjustesCardapio() {
   try {
-    const ps = await getDocs(collection(db, "pedidos"));
-    for (const d of ps.docs) { await deleteDoc(doc(db, "pedidos", d.id)); pedidosApagados++; }
+    const d = await getDoc(doc(db, "publico", "cardapio"));
+    if (d.exists()) window.ajustes = d.data().itens || {};
+  } catch (e) { /* sem acesso: o cardápio do arquivo continua valendo */ }
+  if (typeof edDesenhar === "function") edDesenhar();
+}
 
-    const cs = await getDocs(collection(db, "caixa"));
-    for (const d of cs.docs) { await deleteDoc(doc(db, "caixa", d.id)); caixasApagados++; }
-
-    caixaDoDia = { despesas: [], fechado: false };
-    pedidos = [];
-    desenhar();
-    if (window.rbAoCarregarComandas) window.rbAoCarregarComandas();
-    aviso.textContent = `Pronto: ${pedidosApagados} ${pedidosApagados === 1 ? "pedido" : "pedidos"} e ${caixasApagados} ${caixasApagados === 1 ? "dia de caixa" : "dias de caixa"} apagados. O sistema está zerado.`;
+el("[data-ed-salvar]").addEventListener("click", async () => {
+  const b = el("[data-ed-salvar]"), st = el("[data-ed-status]");
+  b.disabled = true; st.textContent = "Salvando…"; st.dataset.sujo = "false";
+  try {
+    await setDoc(doc(db, "publico", "cardapio"), {
+      itens: window.ajustes || {},
+      mudadoEm: Timestamp.now()
+    });
+    st.textContent = "Salvo. O site muda em até 2 minutos.";
+    if (typeof marcarSujo === "function") marcarSujo(false);
+    setTimeout(() => { if (st.textContent.startsWith("Salvo")) st.textContent = ""; }, 6000);
   } catch (e) {
-    aviso.textContent = "Não consegui apagar tudo. Verifique a internet e tente de novo.";
-    botao.disabled = false;
+    st.textContent = "Não consegui salvar. Verifique a internet e tente de novo.";
+    st.dataset.sujo = "true";
   }
+  b.disabled = false;
 });
 
 /* ========================= abrir e fechar a loja =========================

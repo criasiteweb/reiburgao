@@ -128,7 +128,8 @@ function montarCardapio() {
       .map(g => `<button type="button" role="tab" aria-selected="false" data-f="${g.id}">${g.rotulo}</button>`).join("");
 
   alvo.innerHTML = GRUPOS.filter(g => g.id !== "combos").map(g => {
-    const itens = CARDAPIO.filter(i => i.g === g.id);
+    /* o dono marca "acabou" no painel e o item some da lista do cliente */
+    const itens = CARDAPIO.filter(i => i.g === g.id && !i.off);
     return `
       <div class="grupo" data-grupo="${g.id}">
         <div class="grupo-topo">
@@ -817,6 +818,36 @@ function statusLoja() {
     : `Fechado · abre às ${LOJA.abre}h`;
 }
 
+/* ---- ajustes do cardápio feitos pelo dono no painel ----
+   Preço, esgotado, nome, descrição e foto. Vêm por cima do cardápio do
+   arquivo; se o servidor falhar, o arquivo continua valendo. */
+async function lerCardapioAjustado() {
+  const url = "https://firestore.googleapis.com/v1/projects/rei-burgao-pedidos/databases/(default)/documents/publico/cardapio";
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) return;
+    const d = await r.json();
+    const itens = d && d.fields && d.fields.itens && d.fields.itens.mapValue;
+    if (!itens || !itens.fields) return;
+
+    let mudou = false;
+    Object.keys(itens.fields).forEach(id => {
+      const campos = (itens.fields[id].mapValue || {}).fields || {};
+      const alvo = CARDAPIO.find(x => x.id === id);
+      if (!alvo) return;
+      if (campos.p && campos.p.doubleValue != null) { alvo.p = Number(campos.p.doubleValue); mudou = true; }
+      if (campos.p && campos.p.integerValue != null) { alvo.p = Number(campos.p.integerValue); mudou = true; }
+      if (campos.n && campos.n.stringValue) { alvo.n = campos.n.stringValue; mudou = true; }
+      if (campos.d && campos.d.stringValue != null) { alvo.d = campos.d.stringValue; mudou = true; }
+      if (campos.f && campos.f.stringValue) { alvo.f = campos.f.stringValue; mudou = true; }
+      alvo.off = !!(campos.off && campos.off.booleanValue);
+      if (alvo.off) mudou = true;
+    });
+
+    if (mudou && typeof montarCardapio === "function") montarCardapio();
+  } catch (e) { /* sem internet: vale o cardápio do arquivo */ }
+}
+
 /* lê o interruptor da loja no servidor (leitura pública, sem biblioteca) */
 async function lerEstadoLoja() {
   const url = "https://firestore.googleapis.com/v1/projects/rei-burgao-pedidos/databases/(default)/documents/publico/loja";
@@ -854,8 +885,10 @@ document.addEventListener("DOMContentLoaded", () => {
   pintarCarrinho();
   statusLoja();
   lerEstadoLoja();
+  lerCardapioAjustado();
   setInterval(statusLoja, 60000);
   setInterval(lerEstadoLoja, 120000);
+  setInterval(lerCardapioAjustado, 120000);
   efeitos();
 
   $$("[data-abrir-carrinho]").forEach(b => b.addEventListener("click", () => abrirCarrinho(true)));

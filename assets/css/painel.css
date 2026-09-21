@@ -334,3 +334,60 @@ body.ver-papel .papel{position:static;left:auto;margin:0 auto}
 }
 .btn-perigo:disabled{opacity:.5;cursor:default}
 .zona-status{color:var(--amarelo)!important}
+
+/* ---------- edição do cardápio ---------- */
+.cardapio-editor{max-width:1180px;margin:0 auto;padding:4px 16px 40px}
+.ed-topo{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+.ed-topo h2{font:700 18px/1.2 "Inter",sans-serif;margin:0}
+.ed-ajuda{margin:4px 0 0;font-size:12.5px;color:var(--texto-suave);line-height:1.5}
+.ed-acoes{display:flex;align-items:center;gap:10px}
+.ed-status{font-size:12px;color:var(--texto-suave)}
+.ed-status[data-sujo="true"]{color:var(--amarelo);font-weight:700}
+.ed-acoes .principal{padding:8px 14px;border-radius:9px;border:1px solid var(--amarelo);
+  background:var(--amarelo);color:#1a1200;font:700 12.5px/1.2 "Inter",sans-serif;cursor:pointer}
+.ed-acoes .principal:disabled{opacity:.5;cursor:default}
+
+.ed-busca input{width:100%;max-width:340px;padding:8px 11px;border-radius:9px;font-size:13px;
+  background:var(--giz);color:var(--texto);border:1px solid var(--linha)}
+.ed-grupos{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.ed-grupos button{padding:5px 10px;border-radius:8px;cursor:pointer;font-size:12px;
+  background:var(--giz);color:var(--texto-suave);border:1px solid var(--linha)}
+.ed-grupos button.ativo{background:var(--amarelo);color:#1a1200;border-color:var(--amarelo);font-weight:700}
+
+.ed-lista{display:grid;gap:8px}
+.ed-item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:start;
+  background:var(--carvao);border:1px solid var(--linha);border-radius:12px;padding:10px}
+.ed-item.mudou{border-color:rgba(255,194,14,.5)}
+.ed-item.esgotado{opacity:.55}
+.ed-foto{width:64px;height:64px;border-radius:9px;overflow:hidden;background:var(--giz);
+  display:grid;place-items:center}
+.ed-foto img{width:100%;height:100%;object-fit:cover}
+.ed-semfoto{font-size:10px;color:var(--texto-suave);text-align:center}
+.ed-dados{display:grid;gap:6px;min-width:0}
+.ed-nome,.ed-desc{width:100%;padding:7px 9px;border-radius:8px;font:inherit;
+  background:var(--giz);color:var(--texto);border:1px solid var(--linha)}
+.ed-nome{font-size:13.5px;font-weight:700}
+.ed-desc{font-size:12px;line-height:1.45;resize:vertical}
+.ed-lado{display:grid;gap:6px;justify-items:end}
+.ed-preco{display:grid;gap:3px}
+.ed-preco span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--texto-suave)}
+.ed-preco input{width:92px;padding:7px 9px;border-radius:8px;font-size:13px;text-align:right;
+  background:var(--giz);color:var(--amarelo);font-weight:700;border:1px solid var(--linha)}
+.ed-off{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--texto-suave);cursor:pointer}
+.ed-voltar{padding:4px 8px;border-radius:7px;cursor:pointer;font-size:10.5px;
+  background:transparent;color:var(--texto-suave);border:1px solid var(--linha)}
+.ed-vazio{color:var(--texto-suave);font-size:13px;padding:16px 2px}
+@media (max-width:640px){
+  .ed-item{grid-template-columns:52px 1fr}
+  .ed-lado{grid-column:1/-1;justify-items:stretch;grid-template-columns:1fr auto auto;align-items:end}
+  .ed-preco input{width:100%}
+}
+
+/* correções do editor: não herdar o estilo de outras áreas do painel */
+.cardapio-editor h2{font-family:"Inter",system-ui,sans-serif!important;letter-spacing:0!important;
+  text-transform:none!important;font-weight:700!important;font-size:18px!important;color:var(--texto)!important}
+.cardapio-editor textarea.ed-desc{min-height:0!important;height:auto!important;
+  padding:7px 9px!important;font-size:12px!important;border-radius:8px!important}
+.cardapio-editor .ed-grupos button{flex:0 0 auto!important;padding:5px 11px!important;
+  font:600 12px/1.2 "Inter",sans-serif!important;border-radius:8px!important;min-height:0!important}
+.cardapio-editor .ed-lado button{padding:4px 9px!important;font-size:10.5px!important;min-height:0!important}
