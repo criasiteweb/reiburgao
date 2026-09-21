@@ -100,10 +100,9 @@ function edDesenharLista() {
           <span>Preço</span>
           <input type="text" inputmode="decimal" value="${v.p.toFixed(2).replace(".", ",")}" data-ed-campo="p" />
         </label>
-        <label class="ed-off">
-          <input type="checkbox" data-ed-campo="off" ${v.off ? "checked" : ""} />
-          <span>Acabou</span>
-        </label>
+        <button type="button" class="ed-estoque ${v.off ? "fora" : "tem"}" data-ed-estoque>
+          ${v.off ? "Esgotado" : "Disponível"}
+        </button>
         <button type="button" class="ed-voltar" data-ed-voltar title="Voltar ao original">desfazer</button>
       </div>
     </div>`;
@@ -194,17 +193,37 @@ document.addEventListener("input", e => {
   caixa.classList.toggle("mudou", !!window.ajustes[id]);
 });
 
-document.addEventListener("change", e => {
-  const campo = e.target.closest('[data-ed-campo="off"]');
-  if (!campo) return;
-  const caixa = campo.closest("[data-ed-id]");
+/* Esgotar um produto é urgente: acontece no meio do movimento, com a cozinha
+   cheia. Por isso este botão salva sozinho, sem depender do Salvar. */
+document.addEventListener("click", async e => {
+  const botao = e.target.closest("[data-ed-estoque]");
+  if (!botao) return;
+  const caixa = botao.closest("[data-ed-id]");
   const id = caixa.dataset.edId;
+
+  const acabou = !botao.classList.contains("fora");
   window.ajustes[id] = window.ajustes[id] || {};
-  if (campo.checked) window.ajustes[id].off = true; else delete window.ajustes[id].off;
+  if (acabou) window.ajustes[id].off = true; else delete window.ajustes[id].off;
   if (!Object.keys(window.ajustes[id]).length) delete window.ajustes[id];
-  caixa.classList.toggle("esgotado", campo.checked);
+
+  botao.classList.toggle("fora", acabou);
+  botao.classList.toggle("tem", !acabou);
+  botao.textContent = acabou ? "Esgotado" : "Disponível";
+  caixa.classList.toggle("esgotado", acabou);
   caixa.classList.toggle("mudou", !!window.ajustes[id]);
-  marcarSujo(true);
+
+  botao.disabled = true;
+  const ok = window.salvarCardapio ? await window.salvarCardapio(true) : false;
+  botao.disabled = false;
+
+  const st = document.querySelector("[data-ed-status]");
+  if (st) {
+    st.textContent = ok
+      ? (acabou ? "Marcado como esgotado. Já saiu do site." : "De volta ao cardápio do site.")
+      : "Não consegui salvar. Verifique a internet.";
+    st.dataset.sujo = String(!ok);
+    if (ok) setTimeout(() => { if (st.dataset.sujo !== "true") st.textContent = ""; }, 5000);
+  }
 });
 
 document.addEventListener("click", e => {

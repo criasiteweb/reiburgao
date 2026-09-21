@@ -398,3 +398,13 @@ body.ver-papel .papel{position:static;left:auto;margin:0 auto}
   background:rgba(0,0,0,.72);color:#fff;font:600 9.5px/1 "Inter",sans-serif;
   text-align:center;padding:4px 0;letter-spacing:.04em;text-transform:uppercase}
 .ed-trocar-foto:hover{background:var(--amarelo);color:#1a1200}
+
+/* botão de esgotar produto: um toque, salva na hora */
+.ed-estoque{
+  padding:6px 12px;border-radius:8px;cursor:pointer;min-width:96px;
+  font:700 11.5px/1.2 "Inter",sans-serif;letter-spacing:.02em;
+  transition:background .15s ease,color .15s ease;
+}
+.ed-estoque.tem{background:rgba(47,169,107,.14);color:var(--verde);border:1px solid rgba(47,169,107,.45)}
+.ed-estoque.fora{background:rgba(216,38,28,.16);color:#FF8D82;border:1px solid rgba(216,38,28,.55)}
+.ed-estoque:disabled{opacity:.6;cursor:default}

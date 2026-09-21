@@ -942,6 +942,17 @@ async function carregarAjustesCardapio() {
   if (typeof edDesenhar === "function") edDesenhar();
 }
 
+window.salvarCardapio = async function (silencioso) {
+  try {
+    await setDoc(doc(db, "publico", "cardapio"), {
+      itens: window.ajustes || {},
+      mudadoEm: Timestamp.now()
+    });
+    if (!silencioso && typeof marcarSujo === "function") marcarSujo(false);
+    return true;
+  } catch (e) { return false; }
+};
+
 el("[data-ed-salvar]").addEventListener("click", async () => {
   const b = el("[data-ed-salvar]"), st = el("[data-ed-status]");
   b.disabled = true; st.textContent = "Salvando…"; st.dataset.sujo = "false";
