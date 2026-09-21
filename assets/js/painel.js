@@ -977,7 +977,10 @@ function pintarLoja() {
 async function lerEstadoLoja() {
   try {
     const d = await getDoc(doc(db, "publico", "loja"));
-    lojaAberta = d.exists() ? (d.data().aberta !== false) : null;
+    const v = d.exists() ? d.data() : null;
+    /* o ajuste na mão vale só para o dia em que foi feito: no dia seguinte
+       a loja volta a seguir o horário sozinha, sem ninguém precisar lembrar */
+    lojaAberta = (v && v.dia === hojeISO()) ? (v.aberta !== false) : null;
   } catch (e) { lojaAberta = null; }
   pintarLoja();
 }
@@ -994,8 +997,9 @@ el("[data-loja-estado]").addEventListener("click", async () => {
   try {
     await setDoc(doc(db, "publico", "loja"), {
       aberta: !fechando,
+      dia: hojeISO(),               // vale só hoje
       mudadoEm: Timestamp.now()
-    }, { merge: true });
+    });
   } catch (e) {
     lojaAberta = antes; pintarLoja();
     alert("Não consegui salvar. Verifique a internet e tente de novo.");

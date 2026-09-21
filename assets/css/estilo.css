@@ -534,3 +534,9 @@ em{font-style:normal;color:var(--amarelo)}
   .combo-nome{font-size:16px}
   .combo-preco{font-size:20px}
 }
+
+/* botão de enviar desligado quando a loja está fechada */
+.botao.primario.grande[data-fechado="true"]{
+  background:var(--giz);color:var(--texto-suave);border:1px solid var(--linha);
+  cursor:not-allowed;font-size:.92rem;line-height:1.35;
+}

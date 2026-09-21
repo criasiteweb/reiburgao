@@ -46,7 +46,10 @@ service cloud.firestore {
       allow update: if ehALoja()
                     && request.resource.data.diff(resource.data)
                          .affectedKeys().hasOnly(['status','impresso']);
-      allow delete: if false;
+      /* a loja pode apagar — usado pela Criasiteweb para limpar os pedidos
+         de teste antes de entregar o sistema. Não há botão para isso no
+         painel: é feito por fora, de propósito. */
+      allow delete: if ehALoja();
     }
 
     /* Caixa do dia: despesas com mercadoria e fechamento.
@@ -59,6 +62,14 @@ service cloud.firestore {
        O site do cliente precisa LER isto para mostrar o selo certo,
        então a leitura é livre. Só a loja escreve. */
     match /publico/loja {
+      allow read: if true;
+      allow write: if ehALoja();
+    }
+
+    /* Ajustes do cardápio feitos pelo dono no painel (preço, esgotado,
+       nome e descrição). O site do cliente precisa LER para mostrar os
+       valores certos, então a leitura é livre. Só a loja escreve. */
+    match /publico/cardapio {
       allow read: if true;
       allow write: if ehALoja();
     }

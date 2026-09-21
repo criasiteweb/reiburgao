@@ -696,8 +696,9 @@ function enviarPedido(e) {
   if (soDigitos(f.fone.value).length < 10) return erro(f.fone, "Confira o número do WhatsApp com DDD.");
 
   const modo = f.tipo.value;
-  if (lojaNoManual === false) {
-    return avisoStatus("A loja está fechada no momento. Tente de novo mais tarde.");
+  if (!lojaAbertaAgora().aberto) {
+    travarEnvio();
+    return avisoStatus(motivoFechado());
   }
   const tipo = modo;
   if (tipo === "Entrega") {
@@ -801,6 +802,37 @@ function avisoStatus(msg) {
    O estado é lido do servidor; se não der, vale o horário. */
 let lojaNoManual = null;   // true = aberta na mão, false = fechada na mão
 
+/* está aberta agora? o botão do painel manda; sem ele, vale o horário */
+function lojaAbertaAgora() {
+  const agora = new Date();
+  const h = agora.getHours() + agora.getMinutes() / 60;
+  const fechadoHoje = LOJA.diasFechados.includes(agora.getDay());
+  const peloHorario = !fechadoHoje && (h >= LOJA.abre && h < LOJA.fecha);
+  return {
+    aberto: lojaNoManual === null ? peloHorario : lojaNoManual,
+    fechadoHoje,
+    naMao: lojaNoManual === false
+  };
+}
+
+/* por que não dá para pedir agora, em uma frase curta e sem travessão */
+function motivoFechado() {
+  const e = lojaAbertaAgora();
+  if (e.naMao) return "A loja está fechada no momento. Volte mais tarde.";
+  if (e.fechadoHoje) return "Hoje a loja não abre. Voltamos terça às 18h.";
+  return `Estamos fechados agora. Abrimos às ${LOJA.abre}h.`;
+}
+
+/* liga e desliga o botão de enviar conforme a loja */
+function travarEnvio() {
+  const botao = $("[data-enviar]");
+  if (!botao) return;
+  const { aberto } = lojaAbertaAgora();
+  botao.disabled = !aberto;
+  botao.dataset.fechado = String(!aberto);
+  botao.textContent = aberto ? "Enviar pedido no WhatsApp" : motivoFechado();
+}
+
 function statusLoja() {
   const selo = $("[data-status-selo]");
   const txt = $("[data-status-texto]");
@@ -809,13 +841,14 @@ function statusLoja() {
   const fechadoHoje = LOJA.diasFechados.includes(agora.getDay());
   const peloHorario = !fechadoHoje && (h >= LOJA.abre && h < LOJA.fecha);
   const aberto = lojaNoManual === null ? peloHorario : lojaNoManual;
+  travarEnvio();
 
   selo.dataset.aberto = String(aberto);
   txt.textContent = aberto
     ? "Aberto agora"
     : lojaNoManual === false ? "Fechado no momento"
-    : fechadoHoje ? "Fechado hoje · abre terça às 18h"
-    : `Fechado · abre às ${LOJA.abre}h`;
+    : fechadoHoje ? "Fechado hoje. Abre terça às 18h"
+    : `Fechado. Abre às ${LOJA.abre}h`;
 }
 
 /* ---- ajustes do cardápio feitos pelo dono no painel ----
@@ -856,7 +889,14 @@ async function lerEstadoLoja() {
     if (!r.ok) return;
     const d = await r.json();
     const v = d && d.fields && d.fields.aberta;
-    if (v && typeof v.booleanValue === "boolean") lojaNoManual = v.booleanValue;
+    const dia = d && d.fields && d.fields.dia && d.fields.dia.stringValue;
+    const ag = new Date();
+    const hojeTxt = ag.getFullYear() + "-" + String(ag.getMonth() + 1).padStart(2, "0") +
+      "-" + String(ag.getDate()).padStart(2, "0");
+    /* o ajuste na mão vale só no dia em que foi feito */
+    lojaNoManual = (dia === hojeTxt && v && typeof v.booleanValue === "boolean")
+      ? v.booleanValue : null;
+    travarEnvio();
   } catch (e) { /* sem internet ou sem permissão: vale o horário */ }
   statusLoja();
 }

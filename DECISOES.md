@@ -29,6 +29,8 @@ mudança nova é conferida contra esta lista antes de publicar.
 - Endereço oficial: **R. Eunice Cerqueira Innocencio, 245 - Jardim Quaresmeira,
   Suzano - SP, 08671-330**.
 - Google Maps e Waze levam pelo **endereço escrito**, nunca por coordenada.
+- **Horário:** abre **18:00**, fecha **00:00**, de **terça a domingo**.
+  Fecha segunda-feira. Confirmado pelo Matheus em 21/09/2026.
 - Formas de receber: **Entrega**, **Retirada** e **No restaurante**.
   Não existe "mesa" nem campo de número de mesa.
 - Rodapé do carrinho compacto: o total não pode voltar a ocupar mais de um
@@ -83,11 +85,39 @@ mudança nova é conferida contra esta lista antes de publicar.
   com setas de ano. **Sem trava** de ano nem de mês, para trás e para a frente.
 - A escolha de dia também é livre.
 
+## Edição do cardápio pelo dono (21/09/2026)
+
+- Aba **Cardápio** no painel: muda preço, marca "Acabou" (o item some do site),
+  edita nome e descrição, e desfaz item por item.
+- Os ajustes ficam no servidor e o site aplica por cima do cardápio do arquivo.
+  Se o servidor falhar, valem os preços do arquivo — o site nunca fica sem
+  cardápio.
+- Acesso pela mesma senha do painel: só o Matheus e o dono.
+- **Não existe** botão de apagar pedidos no painel. O Matheus foi explícito:
+  o dono não pode ter essa opção. A limpeza é feita por fora, pela Criasiteweb.
+
+## Entrega ao dono (21/09/2026)
+
+- Regras do servidor publicadas pelo Matheus. Testado e funcionando:
+  fechar a loja, leitura pública do estado, e a aba Cardápio.
+- **Sistema zerado:** 7 pedidos de teste e 2 dias de caixa apagados.
+  Conferido depois: 0 pedidos, 0 caixas.
+- Senha do painel: **123456** (trocada pelo Matheus). Vale sugerir uma mais
+  forte ao entregar, já que o painel mostra nome, telefone e endereço dos
+  clientes.
+
 ## Pendente (depende do Matheus ou do dono)
 
-- Liberar no Firebase a leitura pública do estado da loja, para o botão de
-  abrir/fechar aparecer no site do cliente.
 - Decidir se o telefone sai do cabeçalho da comanda.
 - Receber a lista de bairros com os valores da taxa de entrega.
-- Confirmar horário de fechamento, dias fechados e se "Fanta laranja ou uva"
-  é de 2 litros.
+- Confirmar se "Fanta laranja ou uva" é de 2 litros.
+
+## Verificado em 21/09/2026
+
+- **O pedido do site chega no painel.** Testado de ponta a ponta: um pedido de
+  teste ("Teste Criasiteweb") foi enviado pelo caminho real do site e o
+  servidor aceitou. O que o Matheus via era a versão antiga guardada no
+  navegador dele.
+- **O CEP preenche o endereço sozinho.** Testado na versão publicada com o CEP
+  08671-330: preencheu "Rua Eunice Cerqueira Innocencio", bairro Jardim
+  Quaresmeira, cidade Suzano.
