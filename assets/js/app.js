@@ -12,9 +12,10 @@ const LOJA = {
   whatsapp: "5511976385099",
   endereco: "R. Eunice Cerqueira Innocencio, 245 - Jardim Quaresmeira, Suzano - SP, 08671-330",
   preparo: "40 a 60 min",              // [CONFIRMAR com o dono] tempo médio de entrega
-  abre: 18,                            // hora de abertura (Google)
-  fecha: 23,                           // [CONFIRMAR] horário de fechamento
-  diasFechados: [],                    // [CONFIRMAR] ex.: [1] fecha segunda (0=dom)
+  /* Horário confirmado pelo Matheus: terça a domingo, das 18h à meia-noite. */
+  abre: 18,                            // abre às 18h
+  fecha: 24,                           // fecha à meia-noite
+  diasFechados: [1],                   // fecha segunda-feira (0=dom, 1=seg)
 
   /* =======================================================
      TABELA DE ENTREGA  —  é só isto que o Matheus preenche
@@ -811,7 +812,9 @@ function statusLoja() {
   selo.dataset.aberto = String(aberto);
   txt.textContent = aberto
     ? "Aberto agora"
-    : (lojaNoManual === false ? "Fechado no momento" : `Fechado · abre às ${LOJA.abre}h`);
+    : lojaNoManual === false ? "Fechado no momento"
+    : fechadoHoje ? "Fechado hoje · abre terça às 18h"
+    : `Fechado · abre às ${LOJA.abre}h`;
 }
 
 /* lê o interruptor da loja no servidor (leitura pública, sem biblioteca) */
