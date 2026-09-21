@@ -16,7 +16,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import {
   getFirestore, collection, query, where, orderBy, onSnapshot, getDocs,
-  doc, getDoc, setDoc, updateDoc, Timestamp
+  doc, getDoc, setDoc, updateDoc, deleteDoc, Timestamp
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 import { FIREBASE_CONFIG, CONTA_LOJA } from "./firebase-config.js";
@@ -147,6 +147,7 @@ onAuthStateChanged(auth, usuario => {
     el("[data-senha]").value = "";
     escutarPedidos();
     lerEstadoLoja();
+    const zp = el("[data-zona-perigo]"); if (zp) zp.hidden = false;
     carregarCaixa(hojeISO()).then(() => {
       if (window.rbAoCarregarComandas) window.rbAoCarregarComandas();
     });
@@ -922,6 +923,36 @@ botaoSom.addEventListener("click", () => {
 pintarSom();
 
 el("[data-testar-som]").addEventListener("click", () => apitar(2));
+
+/* ========================= limpar tudo antes de entregar =========================
+   Apaga os pedidos e as comandas de teste, para o dono começar do zero. */
+el("[data-limpar-tudo]").addEventListener("click", async () => {
+  if (!confirm("Apagar TODOS os pedidos e comandas do sistema?\n\nIsso não dá para desfazer.")) return;
+  if (!confirm("Tem certeza mesmo?\n\nDepois disso o caixa e o histórico começam vazios.")) return;
+
+  const aviso = el("[data-limpeza]");
+  const botao = el("[data-limpar-tudo]");
+  botao.disabled = true;
+  aviso.textContent = "Apagando…";
+
+  let pedidosApagados = 0, caixasApagados = 0;
+  try {
+    const ps = await getDocs(collection(db, "pedidos"));
+    for (const d of ps.docs) { await deleteDoc(doc(db, "pedidos", d.id)); pedidosApagados++; }
+
+    const cs = await getDocs(collection(db, "caixa"));
+    for (const d of cs.docs) { await deleteDoc(doc(db, "caixa", d.id)); caixasApagados++; }
+
+    caixaDoDia = { despesas: [], fechado: false };
+    pedidos = [];
+    desenhar();
+    if (window.rbAoCarregarComandas) window.rbAoCarregarComandas();
+    aviso.textContent = `Pronto: ${pedidosApagados} ${pedidosApagados === 1 ? "pedido" : "pedidos"} e ${caixasApagados} ${caixasApagados === 1 ? "dia de caixa" : "dias de caixa"} apagados. O sistema está zerado.`;
+  } catch (e) {
+    aviso.textContent = "Não consegui apagar tudo. Verifique a internet e tente de novo.";
+    botao.disabled = false;
+  }
+});
 
 /* ========================= abrir e fechar a loja =========================
    O selo do site do cliente segue o horário; este botão manda nele.

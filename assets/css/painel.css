@@ -322,3 +322,15 @@ body.ver-papel .papel{position:static;left:auto;margin:0 auto}
 .pedido.do-balcao{border-color:rgba(255,194,14,.28)}
 .pedido .etapa.e-balcao{background:rgba(255,194,14,.16);color:var(--amarelo)}
 .pedido.do-balcao .jaimpresso{color:var(--texto-suave)}
+
+/* ---------- preparar o sistema para valer (apagar testes) ---------- */
+.zona-perigo{max-width:1180px;margin:0 auto;padding:0 16px 28px}
+.zona-perigo summary{cursor:pointer;font:600 12.5px/1.3 "Inter",sans-serif;color:var(--texto-suave)}
+.zona-perigo p{margin:10px 0;font-size:13px;line-height:1.5;color:var(--texto-suave)}
+.btn-perigo{
+  padding:9px 14px;border-radius:9px;cursor:pointer;
+  font:700 12.5px/1.2 "Inter",sans-serif;
+  background:rgba(216,38,28,.14);color:#FF8D82;border:1px solid rgba(216,38,28,.5);
+}
+.btn-perigo:disabled{opacity:.5;cursor:default}
+.zona-status{color:var(--amarelo)!important}
