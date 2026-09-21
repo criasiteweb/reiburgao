@@ -55,6 +55,14 @@ service cloud.firestore {
       allow read, write: if ehALoja();
     }
 
+    /* Estado da loja (aberta/fechada agora).
+       O site do cliente precisa LER isto para mostrar o selo certo,
+       então a leitura é livre. Só a loja escreve. */
+    match /publico/loja {
+      allow read: if true;
+      allow write: if ehALoja();
+    }
+
     /* qualquer outro caminho fica fechado */
     match /{documento=**} {
       allow read, write: if false;
