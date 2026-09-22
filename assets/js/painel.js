@@ -16,7 +16,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import {
   getFirestore, collection, query, where, orderBy, onSnapshot, getDocs,
-  doc, getDoc, setDoc, updateDoc, deleteDoc, Timestamp
+  doc, getDoc, setDoc, updateDoc, deleteDoc, Timestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 import { FIREBASE_CONFIG, CONTA_LOJA } from "./firebase-config.js";
@@ -207,11 +207,12 @@ onAuthStateChanged(auth, usuario => {
 
 /* ========================= ouvir os pedidos ========================= */
 let pararDeEscutar = null;
+let diaEscutado = null;
 
 function faixaDoDia(iso) {
   /* iso = "AAAA-MM-DD"; sem iso, é hoje */
-  const d = iso ? new Date(iso + "T00:00:00") : new Date();
-  d.setHours(0, 0, 0, 0);
+  const d = new Date((iso || hojeISO()) + "T00:00:00");
+  d.setHours(VIRADA_H, 0, 0, 0);
   const fim = new Date(d); fim.setDate(fim.getDate() + 1);
   return { de: Timestamp.fromDate(d), ate: Timestamp.fromDate(fim) };
 }
@@ -248,6 +249,7 @@ function escutarPedidos() {
   /* ao (re)abrir a escuta, a primeira leva não é "pedido novo" —
      senão o painel apitaria para todos os pedidos já existentes do dia */
   primeiraCarga = true;
+  diaEscutado = hojeISO();
   const consulta = query(
     collection(db, "pedidos"),
     where("criadoEm", ">=", inicioDeHoje()),
@@ -261,8 +263,7 @@ function escutarPedidos() {
     });
     pedidos = instantaneo.docs.map(d => ({ id: d.id, ...d.data() }));
     numerarDoDia();
-    desenhar();
-    if (filtro === "caixa") desenharCaixa();
+    if (!(["caixa", "cardapio"].includes(filtro) && ocupadoNaTela())) desenhar();
     if (novos.length) { apitar(); novos.forEach(avisarNaTela); }
     if (pedidos.some(p => p.status === "novo")) comecarInsistencia();
     else pararInsistencia();
@@ -450,10 +451,10 @@ function resumoDoDia() {
   const caixa = el("[data-resumo]");
   const doBalcao = caixaDoDia.comandas || [];
   const tudo = pedidos.concat(doBalcao);
-  const valem = tudo.filter(p => p.status !== "recusado");
+  const valem = tudo.filter(p => p.status !== "recusado" && p.status !== "novo");
   if (!tudo.length) { caixa.hidden = true; return; }
   const soma = valem.reduce((t, p) => t + (Number(p.total) || 0), 0);
-  const recusados = tudo.length - valem.length;
+  const recusados = tudo.filter(p => p.status === "recusado").length;
   caixa.hidden = false;
   caixa.innerHTML = `
     <span><b>${valem.length}</b> ${valem.length === 1 ? "pedido" : "pedidos"}</span>
@@ -463,7 +464,30 @@ function resumoDoDia() {
 }
 
 /* atualiza os "há X min" sem recarregar nada */
-setInterval(() => { if (pedidos.length && !el("[data-tela-painel]").hidden) desenhar(); }, 60000);
+/* O painel fica aberto dias seguidos: quando o dia comercial vira, passa
+   sozinho para o dia novo (pedidos e caixa), a não ser que estejam olhando
+   um dia passado. */
+function ocupadoNaTela() {
+  const a = document.activeElement;
+  if (a && a.matches && a.matches("input, textarea, select") && a.closest("[data-caixa], [data-editor], [data-ed-lista], [data-tela-painel]")) return true;
+  const rel = el("[data-relatorio-mes]");
+  return !!(rel && !rel.hidden);
+}
+setInterval(async () => {
+  if (el("[data-tela-painel]").hidden) return;
+  pintarLoja();
+  if (diaEscutado && diaEscutado !== hojeISO() && !dataHistorico) {
+    escutarPedidos();
+    await carregarCaixa(hojeISO());
+    if (window.rbAoCarregarComandas) window.rbAoCarregarComandas();
+  }
+  /* atualiza os "há X min"; nas telas de digitar, só se ninguém estiver no meio */
+  if (["caixa", "cardapio", "balcao"].includes(filtro)) {
+    if (filtro === "caixa" && !ocupadoNaTela()) desenhar();
+    return;
+  }
+  if (pedidos.length) desenhar();
+}, 60000);
 
 
 /* =========================================================
@@ -473,7 +497,21 @@ setInterval(() => { if (pedidos.length && !el("[data-tela-painel]").hidden) dese
 let caixaDoDia = { despesas: [], fechado: false };
 let diaDoCaixa = null;
 
-function hojeISO() { return new Date().toISOString().slice(0, 10); }
+/* data AAAA-MM-DD no relógio da loja. Não usar toISOString: ele dá o dia em
+   UTC, que em Suzano vira às 21h, no meio do expediente. Venda, despesa,
+   numeração e o botão da loja pulavam para o dia seguinte depois das 21h. */
+function isoLocal(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
+    "-" + String(d.getDate()).padStart(2, "0");
+}
+/* O expediente vai até a meia-noite e o último pedido ainda está saindo depois
+   dela. Por isso o "dia" do painel vira às 4h da manhã, não à meia-noite: o
+   pedido das 23h58 não some da tela às 00h01 e o caixa da noite fica inteiro. */
+const VIRADA_H = 4;
+function diaComercial(d) { return isoLocal(new Date(d.getTime() - VIRADA_H * 3600000)); }
+function hojeISO() { return diaComercial(new Date()); }
+/* o botão da loja conversa com o site do cliente, que usa a data do calendário */
+function hojeCalendario() { return isoLocal(new Date()); }
 
 function diaAtual() { return filtro === "historico" && dataHistorico ? dataHistorico : hojeISO(); }
 
@@ -489,10 +527,30 @@ async function carregarCaixa(iso) {
 
 async function gravarCaixa() {
   try {
-    await setDoc(doc(db, "caixa", diaDoCaixa), caixaDoDia, { merge: true });
+    /* as comandas ficam de fora: elas têm gravação própria (transação), e
+       mandar a lista velha daqui apagaria a comanda que outro aparelho fechou */
+    const { comandas, ...resto } = caixaDoDia;
+    await setDoc(doc(db, "caixa", diaDoCaixa), resto, { merge: true });
+    return true;
   } catch (e) {
     alert("Não consegui salvar. Verifique a internet e tente de novo.");
+    return false;
   }
+}
+
+/* Comanda do balcão: grava sempre no caixa de HOJE, lendo o que está no
+   servidor na hora (transação). Assim dois aparelhos não apagam a comanda
+   um do outro, e olhar o caixa de outro dia não desvia a venda para lá. */
+async function mexerNasComandasDeHoje(mudar) {
+  const hoje = hojeISO();
+  const ref = doc(db, "caixa", hoje);
+  const comandas = await runTransaction(db, async t => {
+    const d = await t.get(ref);
+    const lista = mudar(((d.exists() && d.data().comandas) || []).slice());
+    t.set(ref, { comandas: lista }, { merge: true });
+    return lista;
+  });
+  if (diaDoCaixa === hoje) caixaDoDia.comandas = comandas;
 }
 
 function linhaValor(rot, valor, cls = "") {
@@ -622,8 +680,8 @@ async function relatorioMes(iso) {
   alvo.hidden = false;
   alvo.innerHTML = barraDeMeses(mesDoRelatorio) + `<p class="vazio">Somando o mês…</p>`;
 
-  const de = new Date(+ano, +mes - 1, 1);
-  const ate = new Date(+ano, +mes, 1);
+  const de = new Date(+ano, +mes - 1, 1, VIRADA_H);
+  const ate = new Date(+ano, +mes, 1, VIRADA_H);
   try {
     const r = await getDocs(query(
       collection(db, "pedidos"),
@@ -635,7 +693,7 @@ async function relatorioMes(iso) {
     const porDia = {};
     todos.forEach(p => {
       const dia = p.criadoEm && p.criadoEm.toDate
-        ? p.criadoEm.toDate().toISOString().slice(0, 10) : "?";
+        ? diaComercial(p.criadoEm.toDate()) : "?";
       (porDia[dia] = porDia[dia] || []).push(p);
     });
 
@@ -852,11 +910,12 @@ window.rbComandas = {
   gravar: async (c) => {
     /* pode acontecer de fecharem uma comanda antes do caixa terminar de
        carregar: sem isto a gravação iria para um dia indefinido e se perderia */
-    if (!diaDoCaixa) await carregarCaixa(hojeISO());
-    caixaDoDia.comandas = caixaDoDia.comandas || [];
-    const i = caixaDoDia.comandas.findIndex(x => x.id === c.id);
-    if (i >= 0) caixaDoDia.comandas[i] = c; else caixaDoDia.comandas.push(c);
-    await gravarCaixa();
+    /* se falhar, o erro sobe: o balcão mantém a comanda aberta e avisa */
+    await mexerNasComandasDeHoje(lista => {
+      const i = lista.findIndex(x => x.id === c.id);
+      if (i >= 0) lista[i] = c; else lista.push(c);
+      return lista;
+    });
     desenharCaixa();
     if (filtro !== "caixa" && filtro !== "balcao") desenhar();
     return true;
@@ -864,8 +923,14 @@ window.rbComandas = {
 
   remover: async (id) => {
     if (!diaDoCaixa) await carregarCaixa(hojeISO());
-    caixaDoDia.comandas = (caixaDoDia.comandas || []).filter(x => x.id !== id);
-    await gravarCaixa();
+    const ref = doc(db, "caixa", diaDoCaixa);
+    const comandas = await runTransaction(db, async t => {
+      const d = await t.get(ref);
+      const lista = ((d.exists() && d.data().comandas) || []).filter(x => x.id !== id);
+      t.set(ref, { comandas: lista }, { merge: true });
+      return lista;
+    });
+    caixaDoDia.comandas = comandas;
     desenharCaixa();
     if (filtro !== "caixa" && filtro !== "balcao") desenhar();
     return true;
@@ -930,17 +995,18 @@ els("[data-filtro]").forEach(b => b.addEventListener("click", () => {
     if (!campo.value) campo.value = ontemISO();
     dataHistorico = campo.value;
     el("[data-caixa-data]").hidden = false;
-    carregarHistorico(dataHistorico);
+    carregarCaixa(dataHistorico).then(() => carregarHistorico(dataHistorico));
   } else {
     dataHistorico = null;
     escutarPedidos();   // volta para o dia de hoje, ao vivo
+    if (diaDoCaixa !== hojeISO()) carregarCaixa(hojeISO()).then(desenhar);
   }
   desenhar();
 }));
 
 function ontemISO() {
-  const d = new Date(); d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
+  const d = new Date(hojeISO() + "T12:00:00"); d.setDate(d.getDate() - 1);
+  return isoLocal(d);
 }
 
 el("[data-data]").addEventListener("change", async e => {
@@ -953,11 +1019,12 @@ el("[data-data]").addEventListener("change", async e => {
     return;
   }
   dataHistorico = e.target.value;
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojeISO();
   if (!dataHistorico || dataHistorico === hoje) {
-    filtro = "todos"; dataHistorico = null; escutarPedidos(); desenhar();
+    filtro = "todos"; dataHistorico = null; escutarPedidos();
+    carregarCaixa(hoje).then(desenhar);
   } else {
-    carregarHistorico(dataHistorico);
+    carregarCaixa(dataHistorico).then(() => carregarHistorico(dataHistorico));
   }
 });
 
@@ -1014,15 +1081,25 @@ window.addEventListener("online", () => {
 });
 
 /* ========================= cardápio editado pelo dono ========================= */
+/* Gravar sem ter lido o que está no servidor apagaria preços e fotos do dono
+   (a gravação troca o documento inteiro). Então: não leu, não grava. */
+let ajustesLidos = false;
+async function garantirAjustesLidos() {
+  if (!ajustesLidos) await carregarAjustesCardapio();
+  return ajustesLidos;
+}
+
 async function carregarAjustesCardapio() {
   try {
     const d = await getDoc(doc(db, "publico", "cardapio"));
     if (d.exists()) window.ajustes = d.data().itens || {};
+    ajustesLidos = true;
   } catch (e) { /* sem acesso: o cardápio do arquivo continua valendo */ }
   if (typeof edDesenhar === "function") edDesenhar();
 }
 
 window.salvarCardapio = async function (silencioso) {
+  if (!(await garantirAjustesLidos())) return false;
   try {
     await setDoc(doc(db, "publico", "cardapio"), {
       itens: window.ajustes || {},
@@ -1036,6 +1113,10 @@ window.salvarCardapio = async function (silencioso) {
 el("[data-ed-salvar]").addEventListener("click", async () => {
   const b = el("[data-ed-salvar]"), st = el("[data-ed-status]");
   b.disabled = true; st.textContent = "Salvando…"; st.dataset.sujo = "false";
+  if (!ajustesLidos) {
+    st.textContent = "Não consegui ler o cardápio salvo. Clique em Atualizar sistema e tente de novo.";
+    st.dataset.sujo = "true"; b.disabled = false; return;
+  }
   try {
     await setDoc(doc(db, "publico", "cardapio"), {
       itens: window.ajustes || {},
@@ -1060,7 +1141,9 @@ function pintarLoja() {
   const b = el("[data-loja-estado]");
   if (!b) return;
   const fechada = lojaAberta === false;
-  b.textContent = fechada ? "Loja fechada" : "Loja aberta";
+  const agora = new Date(), h = agora.getHours();
+  const noHorario = agora.getDay() !== 1 && h >= 18;   // terça a domingo, 18h à meia-noite
+  b.textContent = fechada ? "Loja fechada" : noHorario ? "Loja aberta" : "Fora do horário";
   b.setAttribute("aria-pressed", String(!fechada));
   b.dataset.fechada = String(fechada);
 }
@@ -1071,7 +1154,7 @@ async function lerEstadoLoja() {
     const v = d.exists() ? d.data() : null;
     /* o ajuste na mão vale só para o dia em que foi feito: no dia seguinte
        a loja volta a seguir o horário sozinha, sem ninguém precisar lembrar */
-    lojaAberta = (v && v.dia === hojeISO()) ? (v.aberta !== false) : null;
+    lojaAberta = (v && v.dia === hojeCalendario()) ? (v.aberta !== false) : null;
   } catch (e) { lojaAberta = null; }
   pintarLoja();
 }
@@ -1097,7 +1180,7 @@ el("[data-loja-estado]").addEventListener("click", async () => {
     if (fechando) {
       await setDoc(doc(db, "publico", "loja"), {
         aberta: false,
-        dia: hojeISO(),             // o fechamento vale só hoje
+        dia: hojeCalendario(),      // o fechamento vale só hoje
         mudadoEm: Timestamp.now()
       });
     } else {

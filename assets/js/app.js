@@ -46,7 +46,7 @@ const LOJA = {
         "Jardim Anzai":           6,      // 2,6 km
         "Jardim Imperador":       6,      // 2,6 km
         "Jardim Caxangá":         6,      // 2,6 km
-        "Jadim Nena":             6,      // 2,8 km
+        "Jardim Nena":            6,      // 2,8 km
         "Jardim Saúde":           6,      // 2,8 km
         "Jardim Japão":           6,      // 2,9 km
         "Jardim Paulista":        6,      // 3,0 km
@@ -387,6 +387,12 @@ function esvaziarDepoisDoEnvio() {
     /* nome e telefone ficam: é a mesma pessoa pedindo de novo */
     if (f.nome) f.nome.value = nome;
     if (f.fone) f.fone.value = fone;
+    /* o reset troca o rádio e o pagamento sem avisar ninguém: sem isto, depois
+       de um pedido de Retirada os campos de entrega continuavam escondidos */
+    const tipo = f.querySelector("[name=tipo]:checked");
+    if (tipo) tipo.dispatchEvent(new Event("change"));
+    if (f.pagamento) f.pagamento.dispatchEvent(new Event("change"));
+    if (typeof preencherBairros === "function" && $("[data-cidade]")) { preencherBairros(); atualizarTaxa(); }
   }
   abrirCarrinho(false);
 }
@@ -450,6 +456,7 @@ function pintarCarrinho() {
 }
 
 function abrirCarrinho(abrir) {
+  if (abrir && typeof lerEstadoLoja === "function") lerEstadoLoja();   // confere a loja na hora de pedir
   const c = $("[data-carrinho]");
   if (abrir) { c.dataset.aberto = "true"; c.setAttribute("aria-hidden", "false"); $("[data-veu]").hidden = false; document.body.classList.add("travado"); }
   else { delete c.dataset.aberto; c.setAttribute("aria-hidden", "true"); $("[data-veu]").hidden = true; if ($("[data-modal]").hidden) document.body.classList.remove("travado"); }
@@ -458,7 +465,10 @@ function abrirCarrinho(abrir) {
 /* ========================= checkout ========================= */
 function soDigitos(s) { return (s || "").replace(/\D/g, ""); }
 function formatarFone(v) {
-  const d = soDigitos(v).slice(0, 11);
+  let d = soDigitos(v);
+  /* o autocompletar do celular traz "+55 11 9...": tira o código do país */
+  if (d.length >= 12 && d.startsWith("55")) d = d.slice(2);
+  d = d.slice(0, 11);
   if (d.length <= 2) return d;
   if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
@@ -646,12 +656,25 @@ async function buscarBairro() {
   }
 }
 
+function semAcentoMin(t) {
+  return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
 /* marca o bairro no seletor; se não estiver na tabela, acrescenta */
 function aplicarBairro(nome) {
   const sel = $("[data-bairro]");
   if (!sel) return;
-  const igual = [...sel.options].find(o =>
-    o.value.toLowerCase() === String(nome).toLowerCase());
+  /* o ViaCEP escreve "Vila Virgínia" e "Jardim Quaresmeira"; a tabela do
+     dono, "Vila Virginia" e "Jardim Quaresmeira I". Compara sem acento e,
+     se não achar, aceita o único bairro da lista que seja "nome + I". */
+  const chave = t => semAcentoMin(t).replace(/\s+/g, " ").trim();
+  const alvo = chave(nome);
+  const opcoes = [...sel.options].filter(o => o.value && o.value !== SEM_LISTA);
+  let igual = opcoes.find(o => chave(o.value) === alvo);
+  if (!igual) {
+    const perto = opcoes.filter(o => chave(o.value) === alvo + " i");
+    if (perto.length === 1) igual = perto[0];
+  }
   if (igual) { sel.value = igual.value; }
   else {
     const op = document.createElement("option");
@@ -670,8 +693,8 @@ function aplicarBairro(nome) {
 function montarCombos() {
   const alvo = $("[data-vitrine-combos]");
   if (!alvo) return;
-  const combos = CARDAPIO.filter(i => i.g === "combos");
-  const menor = Math.min(...combos.map(c => c.p));
+  const combos = CARDAPIO.filter(i => i.g === "combos" && !i.off);
+  const menor = combos.length ? Math.min(...combos.map(c => c.p)) : 0;
 
   alvo.innerHTML = combos.map(c => {
     /* quanto sai cada lanche dentro do combo, para mostrar a vantagem */
@@ -724,6 +747,7 @@ function preencherBairros() {
   const cidade = $("[data-cidade]").value;
   const bairros = Object.keys(LOJA.entrega.cidades[cidade] || {});
   $("[data-bairro]").innerHTML =
+    `<option value="">Escolha o bairro</option>` +
     bairros.map(b => `<option value="${b}">${b}</option>`).join("") +
     `<option value="${SEM_LISTA}">Meu bairro não está na lista</option>`;
   $("[data-campo-outro]").hidden = true;
@@ -741,11 +765,9 @@ function taxaEntrega() {
   const bairro = sel ? sel.value : "";
   if (bairro && bairro !== SEM_LISTA) {
     const cidade = $("[data-cidade]").value;
-    let v = (LOJA.entrega.cidades[cidade] || {})[bairro];
-    /* bairro na divisa: procura também na outra cidade */
-    if (typeof v !== "number")
-      for (const c of Object.values(LOJA.entrega.cidades))
-        if (typeof c[bairro] === "number") { v = c[bairro]; break; }
+    /* só a tabela da cidade escolhida: procurar o nome em outra cidade
+       cobrava o "Centro" de Suzano para quem mora no Centro de Itaquá */
+    const v = (LOJA.entrega.cidades[cidade] || {})[bairro];
     if (typeof v === "number") return v;      // preço combinado com o dono
   }
   const porKm = taxaPorKm(distanciaKm);       // qualquer outro endereço
@@ -939,11 +961,28 @@ function avisoStatus(msg) {
    O estado é lido do servidor; se não der, vale o horário. */
 let lojaNoManual = null;   // true = aberta na mão, false = fechada na mão
 
+/* dia da semana, hora e data no fuso da loja. Celular com fuso ou relógio
+   de outro lugar não pode abrir a loja fora de hora. */
+function agoraNaLoja() {
+  const p = {};
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo", hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", weekday: "short"
+  }).formatToParts(new Date()).forEach(x => { p[x.type] = x.value; });
+  const dias = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return {
+    dia: dias[p.weekday],
+    h: Number(p.hour) + Number(p.minute) / 60,
+    iso: `${p.year}-${p.month}-${p.day}`
+  };
+}
+
 /* está aberta agora? o botão do painel manda; sem ele, vale o horário */
 function lojaAbertaAgora() {
-  const agora = new Date();
-  const h = agora.getHours() + agora.getMinutes() / 60;
-  const fechadoHoje = LOJA.diasFechados.includes(agora.getDay());
+  const agora = agoraNaLoja();
+  const h = agora.h;
+  const fechadoHoje = LOJA.diasFechados.includes(agora.dia);
   const peloHorario = !fechadoHoje && (h >= LOJA.abre && h < LOJA.fecha);
   return {
     aberto: lojaNoManual === null ? peloHorario : lojaNoManual,
@@ -973,9 +1012,9 @@ function travarEnvio() {
 function statusLoja() {
   const selo = $("[data-status-selo]");
   const txt = $("[data-status-texto]");
-  const agora = new Date();
-  const h = agora.getHours() + agora.getMinutes() / 60;
-  const fechadoHoje = LOJA.diasFechados.includes(agora.getDay());
+  const agora = agoraNaLoja();
+  const h = agora.h;
+  const fechadoHoje = LOJA.diasFechados.includes(agora.dia);
   const peloHorario = !fechadoHoje && (h >= LOJA.abre && h < LOJA.fecha);
   const aberto = lojaNoManual === null ? peloHorario : lojaNoManual;
   travarEnvio();
@@ -991,49 +1030,52 @@ function statusLoja() {
 /* ---- ajustes do cardápio feitos pelo dono no painel ----
    Preço, esgotado, nome, descrição e foto. Vêm por cima do cardápio do
    arquivo; se o servidor falhar, o arquivo continua valendo. */
+/* cópia do cardápio do arquivo: cada leitura parte dela, senão um item que
+   voltou de esgotado ou um preço desfeito só apareciam depois de recarregar */
+let CARDAPIO_BASE = null;
+
+function aplicarAjustes(campos) {
+  if (!CARDAPIO_BASE) CARDAPIO_BASE = CARDAPIO.map(i => Object.assign({}, i));
+  const antes = JSON.stringify(CARDAPIO);
+  CARDAPIO.forEach(alvo => {
+    const b = CARDAPIO_BASE.find(x => x.id === alvo.id) || {};
+    ["p", "n", "d", "f", "foto"].forEach(k => { alvo[k] = b[k]; });
+    alvo.off = !!b.off;
+    const c = ((campos[alvo.id] || {}).mapValue || {}).fields;
+    if (!c) return;
+    if (c.p && c.p.doubleValue != null) alvo.p = Number(c.p.doubleValue);
+    if (c.p && c.p.integerValue != null) alvo.p = Number(c.p.integerValue);
+    if (c.n && c.n.stringValue) alvo.n = c.n.stringValue;
+    if (c.d && c.d.stringValue != null) alvo.d = c.d.stringValue;
+    if (c.f && c.f.stringValue) alvo.f = c.f.stringValue;
+    if (c.foto && c.foto.stringValue) alvo.foto = c.foto.stringValue;
+    alvo.off = !!(c.off && c.off.booleanValue);
+  });
+  /* redesenhar sem mudança nenhuma tiraria o cliente da aba que ele escolheu */
+  if (JSON.stringify(CARDAPIO) === antes) return;
+  if (typeof montarCardapio === "function") montarCardapio();
+  if (typeof montarCombos === "function") montarCombos();
+}
+
+/* ---- ajustes do cardápio feitos pelo dono no painel ----
+   Preço, esgotado, nome, descrição e foto. Vêm por cima do cardápio do
+   arquivo; se o servidor falhar, o arquivo continua valendo. */
 async function lerCardapioAjustado() {
   const url = "https://firestore.googleapis.com/v1/projects/rei-burgao-pedidos/databases/(default)/documents/publico/cardapio";
   try {
     const r = await fetch(url, { cache: "no-store" });
-    if (!r.ok) return;
+    if (r.status === 404) { aplicarAjustes({}); return; }
+    if (!r.ok) throw new Error("servidor " + r.status);
     const d = await r.json();
     const itens = d && d.fields && d.fields.itens && d.fields.itens.mapValue;
-    if (!itens || !itens.fields) return;
-
-    let mudou = false;
-    Object.keys(itens.fields).forEach(id => {
-      const campos = (itens.fields[id].mapValue || {}).fields || {};
-      const alvo = CARDAPIO.find(x => x.id === id);
-      if (!alvo) return;
-      if (campos.p && campos.p.doubleValue != null) { alvo.p = Number(campos.p.doubleValue); mudou = true; }
-      if (campos.p && campos.p.integerValue != null) { alvo.p = Number(campos.p.integerValue); mudou = true; }
-      if (campos.n && campos.n.stringValue) { alvo.n = campos.n.stringValue; mudou = true; }
-      if (campos.d && campos.d.stringValue != null) { alvo.d = campos.d.stringValue; mudou = true; }
-      if (campos.f && campos.f.stringValue) { alvo.f = campos.f.stringValue; mudou = true; }
-      if (campos.foto && campos.foto.stringValue) { alvo.foto = campos.foto.stringValue; mudou = true; }
-      alvo.off = !!(campos.off && campos.off.booleanValue);
-      if (alvo.off) mudou = true;
-    });
-
-    guardarNoAparelho("cardapio", itens.fields);
-    if (mudou && typeof montarCardapio === "function") montarCardapio();
+    const campos = (itens && itens.fields) || {};
+    guardarNoAparelho("cardapio", campos);
+    aplicarAjustes(campos);
   } catch (e) {
     /* servidor fora: usa a última versão boa guardada no aparelho, e na
        falta dela os preços do arquivo. O cardápio nunca some. */
     const guardado = lerDoAparelho("cardapio", 24 * 60 * 60 * 1000);
-    if (!guardado) return;
-    let mudou = false;
-    Object.keys(guardado).forEach(id => {
-      const campos = (guardado[id].mapValue || {}).fields || {};
-      const alvo = CARDAPIO.find(x => x.id === id);
-      if (!alvo) return;
-      if (campos.p && campos.p.doubleValue != null) { alvo.p = Number(campos.p.doubleValue); mudou = true; }
-      if (campos.n && campos.n.stringValue) { alvo.n = campos.n.stringValue; mudou = true; }
-      if (campos.foto && campos.foto.stringValue) { alvo.foto = campos.foto.stringValue; mudou = true; }
-      alvo.off = !!(campos.off && campos.off.booleanValue);
-      if (alvo.off) mudou = true;
-    });
-    if (mudou && typeof montarCardapio === "function") montarCardapio();
+    if (guardado) aplicarAjustes(guardado);
   }
 }
 
@@ -1055,13 +1097,12 @@ async function lerEstadoLoja() {
   const url = "https://firestore.googleapis.com/v1/projects/rei-burgao-pedidos/databases/(default)/documents/publico/loja";
   try {
     const r = await fetch(url, { cache: "no-store" });
-    if (!r.ok) return;
+    if (r.status === 404) { lojaNoManual = null; travarEnvio(); statusLoja(); return; }
+    if (!r.ok) throw new Error("servidor " + r.status);
     const d = await r.json();
     const v = d && d.fields && d.fields.aberta;
     const dia = d && d.fields && d.fields.dia && d.fields.dia.stringValue;
-    const ag = new Date();
-    const hojeTxt = ag.getFullYear() + "-" + String(ag.getMonth() + 1).padStart(2, "0") +
-      "-" + String(ag.getDate()).padStart(2, "0");
+    const hojeTxt = agoraNaLoja().iso;
     /* O botão do painel só FECHA antes da hora, e vale só no dia em que foi
        usado. Nunca força a loja a ficar aberta fora do horário: senão um
        esquecimento deixaria o site aceitando pedido de madrugada. */
@@ -1071,9 +1112,7 @@ async function lerEstadoLoja() {
   } catch (e) {
     /* servidor fora do ar: vale a última resposta boa de hoje, e na falta
        dela o horário normal. O site nunca fica quebrado por causa disso. */
-    const ag = new Date();
-    const hojeTxt = ag.getFullYear() + "-" + String(ag.getMonth() + 1).padStart(2, "0") +
-      "-" + String(ag.getDate()).padStart(2, "0");
+    const hojeTxt = agoraNaLoja().iso;
     const guardado = lerDoAparelho("loja", 12 * 60 * 60 * 1000);
     lojaNoManual = (guardado && guardado.dia === hojeTxt && guardado.fechada) ? false : null;
     travarEnvio();
@@ -1117,6 +1156,9 @@ document.addEventListener("DOMContentLoaded", () => {
     lerCardapioAjustado();
   };
   setInterval(consultarServidor, 300000);        // 5 minutos
+  /* o interruptor da loja é um documento minúsculo: consulta a cada minuto,
+     para "Loja fechada" no painel valer logo, e não em até 5 minutos */
+  setInterval(() => { if (document.visibilityState === "visible") lerEstadoLoja(); }, 60000);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") consultarServidor();
   });

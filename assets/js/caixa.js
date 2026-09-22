@@ -31,10 +31,11 @@ function taxaDoRegistro(p) {
    Soma tudo de uma lista de pedidos
    ========================================================= */
 function apurar(pedidos) {
-  const valem = pedidos.filter(p => p.status !== "recusado");
+  /* pedido que ainda está "novo" (ninguém aceitou) não é venda */
+  const valem = pedidos.filter(p => p.status !== "recusado" && p.status !== "novo");
   const r = {
     quantidade: valem.length,
-    recusados: pedidos.length - valem.length,
+    recusados: pedidos.filter(p => p.status === "recusado").length,
     bruto: 0,          // tudo que o cliente pagou
     taxas: 0,          // parte do motoboy
     liquido: 0,        // venda da comanda, sem a taxa

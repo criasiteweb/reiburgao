@@ -101,9 +101,10 @@ function desenharGrupos() {
 function desenharItens() {
   const alvo = $("[data-itens]");
   if (!alvo) return;
-  const todos = typeof CARDAPIO !== "undefined" ? CARDAPIO : [];
+  const todos = (typeof CARDAPIO !== "undefined" ? CARDAPIO : []).map(comAjuste);
   const t = busca.trim().toLowerCase();
   const lista = todos.filter(i => {
+    if (i.off) return false;   // esgotado no painel não entra na comanda
     const noGrupo = grupoAberto === "todos" || i.g === grupoAberto;
     const naBusca = !t || semAcento(i.n).toLowerCase().includes(semAcento(t));
     return noGrupo && naBusca;
@@ -118,8 +119,18 @@ function desenharItens() {
 }
 
 /* ========================= itens da comanda ========================= */
+/* o item como o dono deixou no painel: preço e nome mudados, e esgotado */
+function comAjuste(i) {
+  const a = (window.ajustes || {})[i.id] || {};
+  return Object.assign({}, i,
+    typeof a.p === "number" ? { p: a.p } : {},
+    a.n ? { n: a.n } : {},
+    { off: !!a.off });
+}
+
 function acharItem(id) {
-  return (typeof CARDAPIO !== "undefined" ? CARDAPIO : []).find(i => i.id === id);
+  const i = (typeof CARDAPIO !== "undefined" ? CARDAPIO : []).find(x => x.id === id);
+  return i ? comAjuste(i) : undefined;
 }
 
 function recalcular() {

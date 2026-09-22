@@ -158,7 +158,11 @@ function taxaAtual() {
 
 
 function numeroComanda(novo) {
-  const hoje = new Date().toISOString().slice(0, 10);
+  /* dia do expediente, no relógio local e virando às 4h como o painel: em UTC
+     a numeração zerava às 21h, e à meia-noite zeraria com a loja atendendo */
+  const d = new Date(Date.now() - 4 * 3600000);
+  const hoje = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
+    "-" + String(d.getDate()).padStart(2, "0");
   let s = { dia: hoje, n: 0 };
   try { s = JSON.parse(localStorage.getItem("rb_comanda_seq")) || s; } catch (e) {}
   if (s.dia !== hoje) s = { dia: hoje, n: 0 };
