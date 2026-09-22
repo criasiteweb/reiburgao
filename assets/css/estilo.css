@@ -540,3 +540,15 @@ em{font-style:normal;color:var(--amarelo)}
   background:var(--giz);color:var(--texto-suave);border:1px solid var(--linha);
   cursor:not-allowed;font-size:.92rem;line-height:1.35;
 }
+
+/* crédito da Cria Site no rodapé — botão que leva ao site da agência */
+.credito-cria{margin-top:1.3rem;display:flex;flex-direction:column;align-items:center;gap:.45rem}
+.credito-cria span{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(237,234,226,.42)}
+.credito-cria a{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-size:.82rem;font-weight:700;letter-spacing:.02em;
+  color:var(--creme);text-decoration:none;
+  border:1px solid rgba(255,255,255,.22);border-radius:999px;
+  padding:.45rem 1.05rem;transition:background .18s,color .18s,border-color .18s;
+}
+.credito-cria a:hover,.credito-cria a:focus-visible{background:var(--amarelo);color:#141414;border-color:var(--amarelo)}
