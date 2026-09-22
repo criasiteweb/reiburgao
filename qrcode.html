@@ -13,8 +13,9 @@
   *{box-sizing:border-box}
   body{margin:0;background:#0E0E10;color:#EDEAE2;font-family:"Inter",system-ui,sans-serif;padding:28px 18px 60px}
   .folha{
-    max-width:520px;margin:0 auto;background:#FFC20E;color:#1a1200;
-    border-radius:26px;padding:34px 28px 30px;text-align:center;
+    max-width:520px;margin:0 auto;background:#1E1E1E;color:#F7F3EA;
+    border-radius:26px;padding:34px 28px 0;text-align:center;
+    overflow:hidden;position:relative;
   }
   .folha img.logo{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;display:block}
   h1{font-family:"Anton",Impact,sans-serif;font-weight:400;font-size:34px;margin:0 0 4px;letter-spacing:.02em;text-transform:uppercase}
@@ -22,11 +23,21 @@
   .qr{background:#fff;border-radius:18px;padding:16px;display:inline-block}
   .qr img{width:250px;height:250px;display:block;image-rendering:pixelated}
   .passos{margin:22px 0 0;font-size:15px;line-height:1.6;font-weight:600}
-  .end{margin:18px 0 0;font-size:13.5px;line-height:1.5;opacity:.75}
+  .end{
+    position:relative;margin:76px -28px 0;padding:22px 28px 26px;
+    font-size:13.5px;line-height:1.5;font-weight:600;
+    background:linear-gradient(100deg,#E3B84B 0%,#C9972B 52%,#A87B20 100%);
+    color:#1E1400;
+  }
+  .end::before{
+    content:"";position:absolute;left:-10%;right:-10%;top:-42px;height:66px;
+    background:linear-gradient(100deg,#E3B84B 0%,#C9972B 60%,#A87B20 100%);
+    border-radius:100% 100% 0 0 / 100% 100% 0 0;
+  }
   .fora{max-width:520px;margin:22px auto 0;text-align:center;color:rgba(237,234,226,.7);font-size:14px;line-height:1.6}
   .fora button{
     margin-top:12px;padding:13px 22px;border-radius:12px;border:0;cursor:pointer;
-    background:#FFC20E;color:#1a1200;font:800 15px/1 "Inter",sans-serif;
+    background:#C9972B;color:#1E1400;font:800 15px/1 "Inter",sans-serif;
   }
   @media print{
     body{background:#fff;padding:0}
