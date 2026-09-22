@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /painel
+Disallow: /comanda
+Disallow: /qrcode
+
+Sitemap: https://reiburgao.com.br/sitemap.xml

@@ -8,62 +8,109 @@
 <link rel="icon" href="assets/img/favicon.png" type="image/png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *{box-sizing:border-box}
   body{margin:0;background:#0E0E10;color:#EDEAE2;font-family:"Inter",system-ui,sans-serif;padding:28px 18px 60px}
+
   .folha{
-    max-width:520px;margin:0 auto;background:#1E1E1E;color:#F7F3EA;
-    border-radius:26px;padding:34px 28px 0;text-align:center;
-    overflow:hidden;position:relative;
+    max-width:520px;margin:0 auto;background:#1B1B1B;color:#F7F3EA;
+    border-radius:8px;overflow:hidden;position:relative;
   }
-  .folha img.logo{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;display:block}
-  h1{font-family:"Anton",Impact,sans-serif;font-weight:400;font-size:34px;margin:0 0 4px;letter-spacing:.02em;text-transform:uppercase}
-  .sub{margin:0 0 22px;font-size:16px;font-weight:600}
-  .qr{background:#fff;border-radius:18px;padding:16px;display:inline-block}
-  .qr img{width:250px;height:250px;display:block;image-rendering:pixelated}
-  .passos{margin:22px 0 0;font-size:15px;line-height:1.6;font-weight:600}
-  .end{
-    position:relative;margin:76px -28px 0;padding:22px 28px 26px;
-    font-size:13.5px;line-height:1.5;font-weight:600;
-    background:linear-gradient(100deg,#E3B84B 0%,#C9972B 52%,#A87B20 100%);
-    color:#1E1400;
+
+  /* ---------- metade preta ---------- */
+  .topo{padding:40px 30px 34px;text-align:center}
+
+  .titulo{position:relative}
+  .brilho{position:absolute;left:14px;top:2px}
+  h1{
+    font-family:"Anton",Impact,sans-serif;font-weight:400;margin:0;
+    line-height:.92;letter-spacing:.01em;text-transform:uppercase;color:#FFF;
   }
-  .end::before{
-    content:"";position:absolute;left:-10%;right:-10%;top:-42px;height:66px;
-    background:linear-gradient(100deg,#E3B84B 0%,#C9972B 60%,#A87B20 100%);
-    border-radius:100% 100% 0 0 / 100% 100% 0 0;
+  h1 .l1{display:block;font-size:40px}
+  h1 .l2{display:block;font-size:52px}
+
+  /* moldura de cantos em volta do QR */
+  .moldura{position:relative;display:inline-block;margin:26px 0 18px;padding:18px}
+  .moldura span{position:absolute;width:30px;height:30px;border:5px solid #EDEAE2}
+  .moldura .c1{top:0;left:0;border-right:0;border-bottom:0}
+  .moldura .c2{top:0;right:0;border-left:0;border-bottom:0}
+  .moldura .c3{bottom:0;left:0;border-right:0;border-top:0}
+  .moldura .c4{bottom:0;right:0;border-left:0;border-top:0}
+  .qr{background:#fff;padding:3px;display:block}
+  .qr img{width:268px;height:268px;display:block;image-rendering:pixelated}
+
+  .aponte{
+    margin:0;font-size:15.5px;line-height:1.35;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;color:#CFCBC2;
   }
+
+  /* ---------- onda + metade dourada ---------- */
+  .onda{display:block;width:100%;height:58px;margin-bottom:-1px}
+
+  .base{
+    background:linear-gradient(100deg,#E9C154 0%,#D2A233 48%,#B4871F 100%);
+    color:#1E1400;padding:6px 30px 30px;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+  }
+  .base .dados{text-align:left;font-size:14px;line-height:1.5;font-weight:700}
+  .base .dados .rua{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
+  .base .dados .tel{font-size:19px;font-weight:800;display:block;letter-spacing:.01em}
+  .base .dados .insta{font-size:14px;font-weight:700;display:block;margin-top:2px}
+  .base img.logo{width:118px;height:118px;flex:0 0 auto;display:block}
+
+  /* ---------- fora da folha ---------- */
   .fora{max-width:520px;margin:22px auto 0;text-align:center;color:rgba(237,234,226,.7);font-size:14px;line-height:1.6}
   .fora button{
     margin-top:12px;padding:13px 22px;border-radius:12px;border:0;cursor:pointer;
-    background:#C9972B;color:#1E1400;font:800 15px/1 "Inter",sans-serif;
+    background:#D2A233;color:#1E1400;font:800 15px/1 "Inter",sans-serif;
   }
+
   @media print{
     body{background:#fff;padding:0}
     .fora{display:none}
-    .folha{max-width:100%;border-radius:0;box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .folha{max-width:100%;border-radius:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
 </head>
 <body>
 
 <div class="folha">
-  <img class="logo" src="assets/img/logo.png" alt="Rei Burgão" />
-  <h1>Peça pelo celular</h1>
-  <p class="sub">Aponte a câmera para o código</p>
 
-  <div class="qr"><img src="assets/img/qrcode.png" alt="QR Code do cardápio do Rei Burgão" /></div>
+  <div class="topo">
+    <div class="titulo">
+      <svg class="brilho" width="62" height="58" viewBox="0 0 62 58" aria-hidden="true">
+        <g stroke="#E9C154" stroke-width="5" stroke-linecap="round">
+          <line x1="6"  y1="30" x2="30" y2="30" />
+          <line x1="12" y1="14" x2="33" y2="22" />
+          <line x1="12" y1="46" x2="33" y2="38" />
+          <line x1="26" y1="4"  x2="38" y2="15" />
+        </g>
+      </svg>
+      <h1><span class="l1">Peça</span><span class="l2">pelo celular</span></h1>
+    </div>
 
-  <p class="passos">
-    Cardápio completo com fotos<br />
-    Monta o pedido e manda no WhatsApp
-  </p>
+    <div class="moldura">
+      <span class="c1"></span><span class="c2"></span><span class="c3"></span><span class="c4"></span>
+      <div class="qr"><img src="assets/img/qrcode.png" alt="QR Code do cardápio do Rei Burgão" /></div>
+    </div>
 
-  <p class="end">
-    R. Eunice Cerqueira Innocencio, 245 — Jd. Quaresmeira, Suzano/SP<br />
-    (11) 97638-5099 · @rei_burgao_
-  </p>
+    <p class="aponte">Aponte a sua câmera<br />para o QR Code</p>
+  </div>
+
+  <svg class="onda" viewBox="0 0 520 58" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,34 C120,2 300,2 520,26 L520,58 L0,58 Z" fill="#E9C154" />
+  </svg>
+
+  <div class="base">
+    <div class="dados">
+      <span class="rua">R. Eunice Cerqueira Innocencio, 245<br />Jd. Quaresmeira, Suzano/SP</span>
+      <span class="tel">(11) 97638-5099</span>
+      <span class="insta">@rei_burgao_</span>
+    </div>
+    <img class="logo" src="assets/img/logo.png" alt="Rei Burgão" />
+  </div>
+
 </div>
 
 <div class="fora">
