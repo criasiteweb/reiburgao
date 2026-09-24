@@ -351,6 +351,7 @@ function cartao(p) {
     <div class="acoes">
       <button type="button" class="principal" data-imprimir="${esc(p.id)}">Imprimir</button>
       ${etapa.proxima ? `<button type="button" data-avancar="${esc(p.id)}">${esc(etapa.acao)}</button>` : ""}
+      ${p.status === "novo" ? `<button type="button" data-aceitar-sem="${esc(p.id)}">Aceitar sem imprimir</button>` : ""}
       ${p.status === "novo" ? `<button type="button" class="recusar" data-recusar="${esc(p.id)}">Recusar</button>` : ""}
       ${p.fone ? `<button type="button" class="avisar" data-avisar="${esc(p.id)}">${esc(etapa.avisar || "Avisar cliente")}</button>` : ""}
       ${etapa.reabre ? `<button type="button" class="reabrir" data-reabrir="${esc(p.id)}">Reabrir pedido</button>` : ""}
@@ -866,6 +867,14 @@ el("[data-lista]").addEventListener("click", async e => {
     return;
   }
 
+  /* pedido pequeno (só um refrigerante) não precisa de comanda no papel */
+  const bs = e.target.closest("[data-aceitar-sem]");
+  if (bs) {
+    const p = achar(bs.dataset.aceitarSem);
+    if (p && p.status === "novo") { await mudarStatus(p.id, "preparando"); pararInsistencia(); }
+    return;
+  }
+
   const bw = e.target.closest("[data-avisar]");
   if (bw) {
     const p = achar(bw.dataset.avisar);
@@ -956,11 +965,20 @@ function primeiroNome(p) {
   return String(p.cliente || "").trim().split(/\s+/)[0] || "tudo bem";
 }
 
+/* O link wa.me passa por uma página de redirecionamento, e em alguns aparelhos
+   o WhatsApp abria na tela inicial, sem a conversa e sem o recado. Por isso:
+   no celular, abre o aplicativo direto na conversa; no computador, o WhatsApp
+   Web já na conversa. */
 function avisarCliente(p) {
-  const numero = String(p.fone || "").replace(/\D/g, "");
+  let numero = String(p.fone || "").replace(/\D/g, "");
+  if (numero.length > 11 && numero.startsWith("55")) numero = numero.slice(2);
   if (numero.length < 10) return alert("Este pedido não veio com um WhatsApp válido.");
-  const recado = (RECADOS[p.status] || RECADOS.novo)(p);
-  window.open(`https://wa.me/55${numero}?text=${encodeURIComponent(recado)}`, "_blank", "noopener");
+  const recado = encodeURIComponent((RECADOS[p.status] || RECADOS.novo)(p));
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    location.href = `whatsapp://send?phone=55${numero}&text=${recado}`;
+  } else {
+    window.open(`https://web.whatsapp.com/send?phone=55${numero}&text=${recado}`, "whatsapp");
+  }
 }
 
 /* ========================= imprimir ========================= */
